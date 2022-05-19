@@ -170,7 +170,7 @@ namespace pixelgpudetails {
       }
     }
     
-    TrackingRecHit2DCPU hits_d(hits_x_coordinates, hits_y_coordinates, hits_z_coordinates, hits_r_coordinates, layerStart_, phi, nullptr);
+    TrackingRecHit2DCPU hits_d(hits_x_coordinates, hits_y_coordinates, hits_z_coordinates, hits_r_coordinates, layerStart_, phi, global_indexes, nullptr);
     //std::cout << "x " << hits_d.view()->xGlobal(0) << '\n';
     //std::cout << "y " << hits_d.view()->yGlobal(0) << '\n';
     //std::cout << "z " << hits_d.view()->zGlobal(0) << '\n';
