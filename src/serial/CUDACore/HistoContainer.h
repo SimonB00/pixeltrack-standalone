@@ -55,10 +55,15 @@ namespace cms {
                                                           = cudaStreamDefault
 #endif
     ) {
-      uint32_t *poff = (uint32_t *)((char *)(h) + offsetof(Histo, off));
-      int32_t size = offsetof(Histo, bins) - offsetof(Histo, off);
-      assert(size >= int(sizeof(uint32_t) * Histo::totbins()));
-      ::memset(poff, 0, size);
+      std::fill(h->off,h->off + h->totbins(),0);
+      h->psws = 0;
+      //std::cout << "off[0] " << &(h->off)[0] << '\n';
+      //uint32_t *poff = (uint32_t *)((char *)(h) + offsetof(Histo, off));
+      //std::cout << "poff " << poff << '\n';
+      //int32_t size = offsetof(Histo, bins) - offsetof(Histo, off);
+      //std::cout << "size " << size << " " << sizeof(uint32_t)*h->totbins() <<'\n'; 
+      //assert(size >= int(sizeof(uint32_t) * Histo::totbins()));
+      //::memset(poff, 0, size);
     }
 
     template <typename Histo>

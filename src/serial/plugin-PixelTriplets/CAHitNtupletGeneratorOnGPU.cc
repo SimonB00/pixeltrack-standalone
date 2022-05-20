@@ -117,12 +117,9 @@ PixelTrackHeterogeneous CAHitNtupletGeneratorOnGPU::makeTuples(TrackingRecHit2DC
   if (m_params.useRiemannFit_) {
     fitter.launchRiemannKernelsOnCPU(hits_d.view(), hits_d.nHits(), CAConstants::maxNumberOfQuadruplets());
   } else {
-    std::cout << "secondo if" << '\n';
     //fitter.launchBrokenLineKernelsOnCPU(hits_d.view(), hits_d.nHits(), CAConstants::maxNumberOfQuadruplets());
-    std::cout << "fit che non facciamo" << '\n';
   }
 
-  //kernels.classifyTuples(hits_d, soa, nullptr);
-  std::cout << "fine tuples" << '\n';
+  kernels.classifyTuples(hits_d, soa, nullptr);
   return tracks;
 }

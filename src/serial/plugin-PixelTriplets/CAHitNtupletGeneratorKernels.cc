@@ -17,8 +17,6 @@ void CAHitNtupletGeneratorKernelsCPU::fillHitDetIndices(HitsView const *hv, TkSo
 template <>
 void CAHitNtupletGeneratorKernelsCPU::buildDoublets(HitsOnCPU const &hh, cudaStream_t stream) {
   auto nhits = hh.nHits();
-  std::cout << "da build " << hh.view()->hitsLayerStart()[0] << '\n';
-  std::cout << "buildDoublets nHits = " << nhits << '\n';
 
 #ifdef NTUPLE_DEBUG
   std::cout << "building Doublets out of " << nhits << " Hits" << std::endl;
@@ -76,7 +74,6 @@ void CAHitNtupletGeneratorKernelsCPU::buildDoublets(HitsOnCPU const &hh, cudaStr
 template <>
 void CAHitNtupletGeneratorKernelsCPU::launchKernels(HitsOnCPU const &hh, TkSoA *tracks_d, cudaStream_t cudaStream) {
   auto *tuples_d = &tracks_d->hitIndices;
-  std::cout << tracks_d->m_nTracks << '\n';
   auto *quality_d = (Quality *)(&tracks_d->m_quality);
 
   assert(tuples_d && quality_d);
@@ -85,8 +82,6 @@ void CAHitNtupletGeneratorKernelsCPU::launchKernels(HitsOnCPU const &hh, TkSoA *
   cms::cuda::launchZero(tuples_d, cudaStream);
 
   auto nhits = hh.nHits();
-  std::cout << nhits << '\n';
-  std::cout << pixelGPUConstants::maxNumberOfHits << '\n';
   assert(nhits <= pixelGPUConstants::maxNumberOfHits);
 
   // std::cout << "N hits " << nhits << std::endl;

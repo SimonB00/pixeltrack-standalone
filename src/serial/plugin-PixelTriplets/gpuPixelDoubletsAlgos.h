@@ -112,8 +112,8 @@ namespace gpuPixelDoublets {
 
     uint32_t pairLayerId = 0;  // cannot go backward
     for (auto j = idy; j < ntot; j += blockDim.y * gridDim.y) {
-      ////std::cout7 << "j" << j << '\n';
-      ////std::cout7 << "innerroba " << innerLayerCumulativeSize[0] << '\n';
+      //std::cout << "j" << j << '\n';
+      //std::cout << "innerroba " << innerLayerCumulativeSize[0] << '\n';
       while (j >= innerLayerCumulativeSize[pairLayerId++]) {
         ;
       }
@@ -124,26 +124,26 @@ namespace gpuPixelDoublets {
 
       uint8_t inner = layerPairs[2 * pairLayerId];
       uint8_t outer = layerPairs[2 * pairLayerId + 1];
-      ////std::cout7 << "inner" << unsigned(inner) << '\n';
-      //std::cout7 << "outer" << unsigned(outer) << '\n';
+      //std::cout << "inner" << unsigned(inner) << '\n';
+      //std::cout << "outer" << unsigned(outer) << '\n';
       assert(outer > inner);
 
       auto hoff = Hist::histOff(outer);
 
-      //std::cout7 << "pairid" << pairLayerId << '\n';
-      //std::cout7 << "j " << j << '\n';
+      //std::cout << "pairid" << pairLayerId << '\n';
+      //std::cout << "j " << j << '\n';
       auto i = (0 == pairLayerId) ? j : j - innerLayerCumulativeSize[pairLayerId - 1];
       //std::cout7 << "i before offset" << i << '\n';
       i += offsets[inner];
-      //std::cout7 << "offset inner" << offsets[inner] << '\n';
-      //std::cout7 << "offset inner + 1" << offsets[inner+1] << '\n';
-      //std::cout7 << "i after offset" << i  << '\n';
+      //std::cout << "offset inner" << offsets[inner] << '\n';
+      //std::cout << "offset inner + 1" << offsets[inner+1] << '\n';
+      //std::cout << "i after offset" << i  << '\n';
       // printf("Hit in Layer %d %d %d %d\n", i, inner, pairLayerId, j);
 
-      //std::cout7 << "offsets[inner]" << offsets[inner] << '\n';
-      //std::cout7 << "offsets[inner+1]" << offsets[inner+1] << '\n';
+      //std::cout << "offsets[inner]" << offsets[inner] << '\n';
+      //std::cout << "offsets[inner+1]" << offsets[inner+1] << '\n';
       assert(i >= offsets[inner]);
-      //std::cout7 << "i " << i << '\n';
+      //std::cout << "i " << i << '\n';
       assert(i < offsets[inner + 1]);
 
       // found hit corresponding to our cuda thread, now do the job
@@ -302,7 +302,6 @@ namespace gpuPixelDoublets {
         printf("OuterHitOfCell full for %d in layer %d/%d, %d,%d %d\n", i, inner, outer, nmin, tot, tooMany);
 #endif
     }  // loop in block...
-    std::cout << "Fine di doubletsFromHist" << '\n';
   }
 
 }  // namespace gpuPixelDoublets

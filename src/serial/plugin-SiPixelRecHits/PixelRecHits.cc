@@ -167,7 +167,6 @@ namespace pixelgpudetails {
     }
     
     TrackingRecHit2DCPU hits_d(hits_x_coordinates, hits_y_coordinates, hits_z_coordinates, hits_r_coordinates, layerStart_, phi, global_indexes, nullptr);
-    std::cout << "da makehits" << hits_d.view()->hitsLayerStart()[0] << '\n';
     return hits_d;
   }
 
