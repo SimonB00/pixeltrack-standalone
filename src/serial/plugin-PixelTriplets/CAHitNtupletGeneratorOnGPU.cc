@@ -103,7 +103,6 @@ PixelTrackHeterogeneous CAHitNtupletGeneratorOnGPU::makeTuples(TrackingRecHit2DC
   kernels.counters_ = m_counters;
   kernels.allocateOnGPU(nullptr);
 
-  std::cout << "da tuples" << hits_d.view()->hitsLayerStart()[0] << '\n';
   kernels.buildDoublets(hits_d, nullptr);
   kernels.launchKernels(hits_d, soa, nullptr);
   kernels.fillHitDetIndices(hits_d.view(), soa, nullptr);  // in principle needed only if Hits not "available"
@@ -118,11 +117,12 @@ PixelTrackHeterogeneous CAHitNtupletGeneratorOnGPU::makeTuples(TrackingRecHit2DC
   if (m_params.useRiemannFit_) {
     fitter.launchRiemannKernelsOnCPU(hits_d.view(), hits_d.nHits(), CAConstants::maxNumberOfQuadruplets());
   } else {
+    std::cout << "secondo if" << '\n';
     fitter.launchBrokenLineKernelsOnCPU(hits_d.view(), hits_d.nHits(), CAConstants::maxNumberOfQuadruplets());
+    std::cout << "fit che non facciamo" << '\n';
   }
 
   kernels.classifyTuples(hits_d, soa, nullptr);
-
-  std::cout << "Ho finito di fare le tuple" << '\n';
+  
   return tracks;
 }

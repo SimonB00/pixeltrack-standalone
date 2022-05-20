@@ -60,16 +60,8 @@ namespace gpuPixelDoublets {
 
     using Hist = TrackingRecHit2DSOAView::Hist;
 
-    std::cout << "inizio algos" << '\n';
     auto const& __restrict__ hist = hh.phiBinner();
     auto const* offsets = hh.hitsLayerStart();
-    for(int j = 0; j < 48; ++j) {
-      //std::cout7 << offsets[j] << '\n';
-      //std::cout7 << hh.hitsLayerStart()[j] << '\n';
-      //if(offsets[j]) {
-      //  //std::cout7 << j << '\n';
-      //}
-    }
     assert(offsets);
 
     std::vector<uint8_t> layers = {10,9,8,7,6,5,4,        // vol7
@@ -246,9 +238,9 @@ namespace gpuPixelDoublets {
         if (kk != kl && kk != kh)
           nmin += hist.size(kk + hoff);
 #endif
-        std::cout << "kk " << kk << '\n';      // printa 126
-        std::cout << "hoff " << hoff << '\n';  // printa 256
-        std::cout << hist.bins[0] << '\n';     // printa 0
+        //std::cout << "kk " << kk << '\n';      // printa 126
+        //std::cout << "hoff " << hoff << '\n';  // printa 256
+        //std::cout << hist.bins[0] << '\n';     // printa 0
         //TrackingRecHit2DSOAView::Hist hist2;
         auto const* __restrict__ p = hist.begin(kk + hoff);
         auto const* __restrict__ e = hist.end(kk + hoff);
@@ -261,13 +253,13 @@ namespace gpuPixelDoublets {
         //std::cout << "manual p " <<  hist2.off[kk + hoff] << std::endl;
         //std::cout << "manual e " <<  hist2.off[kk + hoff + 1] << std::endl;
         p += first;
-        std::cout << "p,e " << p << ' ' << e << '\n';   // prints 0 and 0, so it doesn't enter the for loop
+        //std::cout << "p,e " << p << ' ' << e << '\n';   // prints 0 and 0, so it doesn't enter the for loop
         //*assert(p<e);
-        std::cout << "prima del for" << '\n';
+        //std::cout << "prima del for" << '\n';
 
-        std::cout << "FIRST " << first << " Stride " << stride << std::endl;
+        //std::cout << "FIRST " << first << " Stride " << stride << std::endl;
         for (; p < e; p += stride) {
-          std::cout << "p,e,stride " << p << ' ' << e << ' ' << stride << '\n';   // see above
+          //std::cout << "p,e,stride " << p << ' ' << e << ' ' << stride << '\n';   // see above
           auto oi = __ldg(p);
           assert(oi >= offsets[outer]);
           assert(oi < offsets[outer + 1]);
@@ -289,14 +281,14 @@ namespace gpuPixelDoublets {
           //  continue;
 
           auto ind = atomicAdd(nCells, 1);
-          std::cout << "ind,maxdubl" << ind << ' ' << maxNumOfDoublets << '\n';
+          //std::cout << "ind,maxdubl" << ind << ' ' << maxNumOfDoublets << '\n';
           if (ind >= maxNumOfDoublets) {
             atomicSub(nCells, 1);
             break;
           }  // move to SimpleVector??
           // int layerPairId, int doubletId, int innerHitId, int outerHitId)
           cells[ind].init(*cellNeighbors, *cellTracks, hh, pairLayerId, ind, i, oi);
-          std::cout << "inner x" << cells[ind].get_inner_x(hh) << '\n';
+          //std::cout << "inner x" << cells[ind].get_inner_x(hh) << '\n';
           isOuterHitOfCell[oi].push_back(ind);
 #ifdef GPU_DEBUG
           if (isOuterHitOfCell[oi].full())
