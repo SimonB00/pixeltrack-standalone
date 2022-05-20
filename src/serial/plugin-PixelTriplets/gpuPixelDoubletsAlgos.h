@@ -220,7 +220,7 @@ namespace gpuPixelDoublets {
       };
 
       auto iphicut = phicuts[pairLayerId];
-      std::cout << "phi cut " << iphicut << "mep " << mep << std::endl;
+      //std::cout << "phi cut " << iphicut << "mep " << mep << std::endl;
       auto kl = Hist::bin(int16_t(mep - iphicut));
       auto kh = Hist::bin(int16_t(mep + iphicut));
       auto incr = [](auto& k) { return k = (k + 1) % Hist::nbins(); };

@@ -35,9 +35,9 @@ void CAHitNtupletCUDA::produce(edm::Event& iEvent, const edm::EventSetup& es) {
   std::cout << hits.view()->iphi(0) << '\n';
   
   //auto const& hits_view = hits.view();
-  PixelTrackHeterogeneous tuples_ = gpuAlgo_.makeTuples(hits, bf);
+  //PixelTrackHeterogeneous tuples_ = gpuAlgo_.makeTuples(hits, bf);
   std::cout << "dopo tuples" << '\n';
-  std::cout << "m_nTracks = " << tuples_->m_nTracks << '\n';
+  //std::cout << "m_nTracks = " << tuples_->m_nTracks << '\n';
   iEvent.emplace(tokenTrackCPU_, gpuAlgo_.makeTuples(hits, bf));
   std::cout << "--------------------------------------------------------------------------------" << '\n';
 }
