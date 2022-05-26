@@ -86,12 +86,13 @@ namespace pixelgpudetails {
     return hits_d;
   }
 
+  // My makeHits
   TrackingRecHit2DCPU PixelRecHitGPUKernelCustom::makeHits2(int file_number) const {
     std::vector<float> hits_x_coordinates;
     std::vector<float> hits_y_coordinates;
     std::vector<float> hits_z_coordinates;
     std::vector<float> hits_r_coordinates;
-    std::vector<int> global_indexes;
+    std::vector<uint16_t> global_indexes;
     std::vector<short> phi;
 
     if(file_number >= 5000 && file_number < 5500) {
@@ -147,15 +148,13 @@ namespace pixelgpudetails {
       is_4.open(index_file_name);
       int d;
       for(int i = 0; is_4 >> d; ++i) { 
-        global_indexes.push_back(d); 
+        global_indexes.push_back((uint16_t)(d)); 
       }
       is_4.close();
 
       // Fill phi
       for(int i = 0; i < (int)(hits_x_coordinates.size()); ++i) {
         float e = atan(hits_y_coordinates[i]/hits_x_coordinates[i]);
-        //std::cout << e << '\n';
-        //std::cout << phi2short(e) << '\n';
         phi.push_back(phi2short(e));
       }
     }
@@ -175,7 +174,6 @@ namespace pixelgpudetails {
       hits_d.view()->setDetInd(i,global_indexes[i]);
     }
 
-    //cms::cuda::fillManyFromVector(hits_d.phiBinner(), 10, hits_d.view()->m_iphi, hits_d.hitsLayerStart(), hits_d.nHits(), 256);
     return hits_d;
   }
 
