@@ -136,19 +136,19 @@ void CAHitNtupletGeneratorKernelsCPU::launchKernels(HitsOnCPU const &hh, TkSoA *
   //      hh.view(), device_theCells_.get(), device_nCells_, device_isOuterHitOfCell_.get(), nhits, true);
   //}
 
-  if (m_params.doStats_) {    // Qui non ci entra
-    kernel_checkOverflows(tuples_d,
-                          device_tupleMultiplicity_.get(),
-                          device_hitTuple_apc_,
-                          device_theCells_.get(),
-                          device_nCells_,
-                          device_theCellNeighbors_.get(),
-                          device_theCellTracks_.get(),
-                          device_isOuterHitOfCell_.get(),
-                          nhits,
-                          m_params.maxNumberOfDoublets_,
-                          counters_);
-  }
+  //if (m_params.doStats_) {    // Qui non ci entra
+  //  kernel_checkOverflows(tuples_d,
+  //                        device_tupleMultiplicity_.get(),
+  //                        device_hitTuple_apc_,
+  //                        device_theCells_.get(),
+  //                        device_nCells_,
+  //                        device_theCellNeighbors_.get(),
+  //                        device_theCellTracks_.get(),
+  //                        device_isOuterHitOfCell_.get(),
+  //                        nhits,
+  //                        m_params.maxNumberOfDoublets_,
+  //                        counters_);
+  //}
 }
 
 template <>
