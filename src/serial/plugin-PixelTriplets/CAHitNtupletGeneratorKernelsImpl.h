@@ -453,7 +453,6 @@ __global__ void kernel_fillHitInTracks(HitContainer const *__restrict__ tuples,
     if (quality[idx] != trackQuality::loose)
       continue;
     for (auto h = tuples->begin(idx); h != tuples->end(idx); ++h){
-      std::cout << "vado a fillare" << '\n';
       hitToTuple->fillDirect(*h, idx);
     }
   }
@@ -472,6 +471,7 @@ __global__ void kernel_fillHitDetIndices(HitContainer const *__restrict__ tuples
   auto nhits = hh.nHits();
   for (int idx = first, ntot = tuples->size(); idx < ntot; idx += gridDim.x * blockDim.x) {
     assert(tuples->bins[idx] < nhits);
+    std::cout << "tuples->bins[idx] " << tuples->bins[idx] << '\n'; 
     hitDetIndices->bins[idx] = hh.detectorIndex(tuples->bins[idx]);
     std::cout << "detectorIndex(tuples->bins[idx]) " << hh.detectorIndex(tuples->bins[idx]) << '\n';   // Printa sempre 10, 9 e 8.
   }

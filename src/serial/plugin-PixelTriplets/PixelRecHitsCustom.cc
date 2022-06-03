@@ -21,7 +21,8 @@
 
 std::string path = "/home/simonb/documents/thesis/not_sorted/";
 int n_events = 1770;
-int nLayers = 48;
+//int nLayers = 48;
+int nLayers = 19;
 
 std::map<int,int> def_hits_map() {
   std::map<int,int> event_nhits = {};

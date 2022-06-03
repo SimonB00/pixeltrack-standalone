@@ -110,6 +110,17 @@ PixelTrackHeterogeneous CAHitNtupletGeneratorOnGPU::makeTuples(TrackingRecHit2DC
   if (0 == hits_d.nHits())
     return tracks;
 
+  //int i = 0;
+  //for(auto& h : soa->hitIndices) {
+  //  std::cout << "hit " << i << " " << h << '\n';
+  //  i += 1;
+  //}
+  //int j = 0;
+  //for(auto& h : soa->detIndices) {
+  //  std::cout << "det " << j << " " << h << '\n';
+  //  j += 1;
+  //}
+
   // now fit
   /*
   HelixFitOnGPU fitter(bfield, m_params.fit5as4_);

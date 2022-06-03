@@ -72,7 +72,7 @@ namespace gpuPixelDoublets {
       for (uint32_t i = 1; i < nPairs; ++i) {
         innerLayerCumulativeSize[i] = innerLayerCumulativeSize[i - 1] + layerSize(layerPairs[2 * i]);
       }
-      ntot = 1500;
+      ntot = innerLayerCumulativeSize[nPairs - 1];    // 52541
     }
     __syncthreads();
     // x runs faster
@@ -231,6 +231,9 @@ namespace gpuPixelDoublets {
         for (; p < e; p += stride) {
           //std::cout << "p,e,stride " << p << ' ' << e << ' ' << stride << '\n';   // see above
           auto oi = __ldg(p);
+          std::cout << "oi " << oi << '\n';
+          std::cout << "offsets[outer]" << offsets[outer] << '\n';
+          std::cout << "offsets[outer+1]" << offsets[outer+1] << '\n';
           assert(oi >= offsets[outer]);
           assert(oi < offsets[outer + 1]);
           //auto mo = hh.detectorIndex(oi);   // what is this?
@@ -260,7 +263,9 @@ namespace gpuPixelDoublets {
           cells[ind].init(*cellNeighbors, *cellTracks, hh, pairLayerId, ind, i, oi);
           //std::cout << "cells " << cells[ind].get_inner_x(hh) << '\n';
           //std::cout << "cells " << cells[ind].get_outer_x(hh) << '\n';
-          //std::cout << "inner x" << cells[ind].get_inner_x(hh) << '\n';
+          std::cout << i << '\n';
+          std::cout << "inner x" << cells[ind].get_inner_detIndex(hh) << '\n';
+          std::cout << "outer x" << cells[ind].get_outer_detIndex(hh) << '\n';
           isOuterHitOfCell[oi].push_back(ind);
 #ifdef GPU_DEBUG
           if (isOuterHitOfCell[oi].full())
