@@ -98,43 +98,39 @@ PixelTrackHeterogeneous CAHitNtupletGeneratorOnGPU::makeTuples(TrackingRecHit2DC
   PixelTrackHeterogeneous tracks(std::make_unique<pixelTrack::TrackSoA>());
   auto* soa = tracks.get();   // Oggetto che punta alle tracks
   assert(soa);
-
+  std::cout << " BEFORE KERNELS INITI" << std::endl;
   CAHitNtupletGeneratorKernelsCPU kernels(m_params);
+  std::cout << " AFTER KERNELS INITI" << std::endl;
   kernels.counters_ = m_counters;
   kernels.allocateOnGPU(nullptr);
+  std::cout << " AFTER allocateGPU" << std::endl;
 
   kernels.buildDoublets(hits_d, nullptr);
+  std::cout << " AFTER buildDoublets" << std::endl;
   kernels.launchKernels(hits_d, soa, nullptr);
+  std::cout << " AFTER launchKernels" << std::endl;
+  // std::cout << "NUMBER OF TRACKS " << soa->m_nTracks << std::endl;
   kernels.fillHitDetIndices(hits_d.view(), soa, nullptr);  // in principle needed only if Hits not "available"
-
+  std::cout << " AFTER fillHitDetIndices" << std::endl;
   if (0 == hits_d.nHits())
     return tracks;
 
-  //int i = 0;
-  //for(auto& h : soa->hitIndices) {
-  //  std::cout << "hit " << i << " " << h << '\n';
-  //  i += 1;
-  //}
-  //int j = 0;
-  //for(auto& h : soa->detIndices) {
-  //  std::cout << "det " << j << " " << h << '\n';
-  //  j += 1;
-  //}
-
+  //std::cout << soa->hitIndices << '\n';
   // now fit
-  /*
   HelixFitOnGPU fitter(bfield, m_params.fit5as4_);
   fitter.allocateOnGPU(&(soa->hitIndices), kernels.tupleMultiplicity(), soa);
-
+  std::cout << " AFTER allocateOnGPUfitter" << std::endl;
   
   if (m_params.useRiemannFit_) {
     fitter.launchRiemannKernelsOnCPU(hits_d.view(), hits_d.nHits(), CAConstants::maxNumberOfQuadruplets());
   } else {
     fitter.launchBrokenLineKernelsOnCPU(hits_d.view(), hits_d.nHits(), CAConstants::maxNumberOfQuadruplets());
   }
-
-  */
+  std::cout << " berfore classifytuple " << std::endl;
   kernels.classifyTuples(hits_d, soa, nullptr);
-
+  std::cout << " after classifyTuples " << std::endl;
+  // for(auto & hi : tracks->hitIndices){
+  //   // std::cout << " makeTuples HI " << hi << std::endl;
+  // }
   return tracks;
 }

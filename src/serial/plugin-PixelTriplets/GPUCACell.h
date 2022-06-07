@@ -319,8 +319,10 @@ public:
           hits[nh] = theOuterHitId;
           auto it = foundNtuplets.bulkFill(apc, hits, tmpNtuplet.size() + 1);
           if (it >= 0) {  // if negative is overflow....
-            for (auto c : tmpNtuplet)
+            for (auto c : tmpNtuplet){
               cells[c].addTrack(it, cellTracks);
+              // std::cout << " Adding Track " << std::endl;
+            }
             quality[it] = bad;  // initialize to bad
           }
         }

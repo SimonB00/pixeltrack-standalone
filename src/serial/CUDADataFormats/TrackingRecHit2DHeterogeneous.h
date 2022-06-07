@@ -68,7 +68,7 @@ private:
   // needed as kernel params...
   Hist* m_hist;
   uint32_t* m_hitsLayerStart;
-  int16_t* m_iphi;
+  short* m_iphi;
 
   int event_number;
 
@@ -170,7 +170,7 @@ TrackingRecHit2DHeterogeneous<Traits>::TrackingRecHit2DHeterogeneous(std::vector
   m_iphi = view->m_iphi = phi_.data();
   m_hitsLayerStart = view->m_hitsLayerStart = layerStart_.data();
 
-  cms::cuda::fillManyFromVector(view->m_hist, 10, view->m_iphi, view->m_hitsLayerStart, x_coord.size(), 256);
+  cms::cuda::fillManyFromVector(view->m_hist, 10, view->m_iphi, view->m_hitsLayerStart, x_coord.size() - 1, 256);
   m_view.reset(view.release()); 
 }
 

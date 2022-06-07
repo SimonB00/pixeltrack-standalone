@@ -20,9 +20,10 @@
 
 
 std::string path = "/home/simonb/documents/thesis/not_sorted/";
+
+//std::string path = "/data2/user/wredjeb/TrackML/pixeltrack-standalone/dataMLBlue/";
 int n_events = 1770;
-//int nLayers = 48;
-int nLayers = 19;
+int nLayers = 48;
 
 std::map<int,int> def_hits_map() {
   std::map<int,int> event_nhits = {};
@@ -156,6 +157,9 @@ namespace pixelgpudetails {
       // Fill phi
       for(int i = 0; i < (int)(hits_x_coordinates.size()); ++i) {
         float e = atan(hits_y_coordinates[i]/hits_x_coordinates[i]);
+        // std::cout << "e " << e << " phi2short(e) " << phi2short(e) << std::endl;
+        assert(e >= -M_PI);
+        assert(e <= M_PI);
         phi.push_back(phi2short(e));
       }
     }
@@ -174,6 +178,11 @@ namespace pixelgpudetails {
       hits_d.view()->setiphi(i,phi[i]);
       hits_d.view()->setDetInd(i,global_indexes[i]);
     }
+
+    // std::cout << " looping over layerStart " << std::endl;
+    // for(auto & ls : layerStart_){
+    //   std::cout << ls << std::endl;
+    // }
 
     return hits_d;
   }

@@ -161,7 +161,9 @@ public:
   using HitContainer = pixelTrack::HitContainer;
 
   CAHitNtupletGeneratorKernels(Params const& params) : m_params(params) {}
-  ~CAHitNtupletGeneratorKernels() = default;
+  ~CAHitNtupletGeneratorKernels() {
+    cellStorage_.reset((unsigned char*)malloc(sizeof(unsigned char)));
+  };
 
   TupleMultiplicity const* tupleMultiplicity() const { return device_tupleMultiplicity_.get(); }
 

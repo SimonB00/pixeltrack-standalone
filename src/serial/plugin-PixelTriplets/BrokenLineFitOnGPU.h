@@ -42,12 +42,12 @@ __global__ void kernelBLFastFit(Tuples const *__restrict__ foundNtuplets,
   // look in bin for this hit multiplicity
   auto local_start = blockIdx.x * blockDim.x + threadIdx.x;
 
-#ifdef BROKENLINE_DEBUG
+// #ifdef BROKENLINE_DEBUG
   if (0 == local_start) {
     printf("%d total Ntuple\n", foundNtuplets->nbins());
     printf("%d Ntuple of size %d for %d hits to fit\n", tupleMultiplicity->size(nHits), nHits, hitsInFit);
   }
-#endif
+// #endif
 
   for (int local_idx = local_start, nt = Rfit::maxNumberOfConcurrentFits(); local_idx < nt;
        local_idx += gridDim.x * blockDim.x) {
@@ -65,23 +65,39 @@ __global__ void kernelBLFastFit(Tuples const *__restrict__ foundNtuplets,
     Rfit::Map4d fast_fit(pfast_fit + local_idx);
     Rfit::Map6xNf<N> hits_ge(phits_ge + local_idx);
 
-#ifdef BL_DUMP_HITS
+// #ifdef BL_DUMP_HITS
     __shared__ int done;
     done = 0;
     __syncthreads();
     bool dump = (foundNtuplets->size(tkid) == 5 && 0 == atomicAdd(&done, 1));
-#endif
+    std::cout << "DUMP: " << dump << std::endl;
+// #endif
 
     // Prepare data structure
     auto const *hitId = foundNtuplets->begin(tkid);
-    for (unsigned int i = 0; i < hitsInFit; ++i) {
+
+
+
+    std::cout << "hitsinfit " << hitsInFit << std::endl;
+
+
+
+
+    for (unsigned int i = 0; i < hitsInFit; i++) {
+      
       auto hit = hitId[i];
+      std::cout << " i " << i << " hitId[i] " << hitId[i] << "detectorIndex(hit) " << hhp->detectorIndex(hit) << std::endl;
       float ge[6];
-      hhp->cpeParams()
-          .detParams(hhp->detectorIndex(hit))
-          .frame.toGlobal(hhp->xerrLocal(hit), 0, hhp->yerrLocal(hit), ge);
-#ifdef BL_DUMP_HITS
-      if (dump) {
+      // hhp->cpeParams()
+      //     .detParams(hhp->detectorIndex(hit))
+      //     .frame.toGlobal(0.1, 0, 0.1, ge);
+      ge[0] = 1e-7;
+      ge[1] = 1e-7;
+      ge[2] = 1e-7;
+      ge[3] = 1e-7;
+      ge[4] = 1e-7;
+      ge[5] = 1e-7;
+  #ifdef BL_DUMP_HITS
         printf("Hit global: %d: %d hits.col(%d) << %f,%f,%f\n",
                tkid,
                hhp->detectorIndex(hit),
@@ -91,7 +107,7 @@ __global__ void kernelBLFastFit(Tuples const *__restrict__ foundNtuplets,
                hhp->zGlobal(hit));
         printf("Error: %d: %d  hits_ge.col(%d) << %e,%e,%e,%e,%e,%e\n",
                tkid,
-               hhp->detetectorIndex(hit),
+               hhp->detectorIndex(hit),
                i,
                ge[0],
                ge[1],
@@ -99,7 +115,6 @@ __global__ void kernelBLFastFit(Tuples const *__restrict__ foundNtuplets,
                ge[3],
                ge[4],
                ge[5]);
-      }
 #endif
       hits.col(i) << hhp->xGlobal(hit), hhp->yGlobal(hit), hhp->zGlobal(hit);
       hits_ge.col(i) << ge[0], ge[1], ge[2], ge[3], ge[4], ge[5];

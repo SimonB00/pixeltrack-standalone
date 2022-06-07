@@ -254,7 +254,7 @@ __global__ void kernel_connect(cms::cuda::AtomicPairCounter *apc1,
           zo,
           ptmin,
           isBarrel ? CAThetaCutBarrel : CAThetaCutForward);  // 2.f*thetaCut); // FIXME tune cuts
-      //if(aligned) { std::cout << "allineati" << '\n'; }
+      // if(aligned) { std::cout << "Aligned" << '\n'; }
       if (aligned &&
           thisCell.dcaCut(hh,
                           oc,
@@ -264,6 +264,7 @@ __global__ void kernel_connect(cms::cuda::AtomicPairCounter *apc1,
         oc.addOuterNeighbor(cellIndex, *cellNeighbors);
         thisCell.theUsed |= 1;
         oc.theUsed |= 1;
+        // std::cout << "Aligned and dcaCut" << std::endl;
       }
     }  // loop on inner cells
   }    // loop on outer cells
@@ -288,13 +289,15 @@ __global__ void kernel_find_ntuplets(GPUCACell::Hits const *__restrict__ hhp,
 
     auto pid = thisCell.theLayerPairId;
     auto doit = minHitsPerNtuplet > 3 ? pid < 3 : pid < 8 || pid > 12;
+    doit = true;
     if (doit) {
       GPUCACell::TmpTuple stack;
       stack.reset();
-      thisCell.find_ntuplets<6>(
+      thisCell.find_ntuplets<10>(
           hh, cells, *cellTracks, *foundNtuplets, *apc, quality, stack, minHitsPerNtuplet, pid < 3);
       assert(stack.empty());
       // printf("in %d found quadruplets: %d\n", cellIndex, apc->get());
+      // std::cout << "found quadruplets: " << apc->get().n << " " << apc->get().m << std::endl;
     }
   }
 }
@@ -317,11 +320,12 @@ __global__ void kernel_countMultiplicity(HitContainer const *__restrict__ foundN
   auto first = blockIdx.x * blockDim.x + threadIdx.x;
   for (int it = first, nt = foundNtuplets->nbins(); it < nt; it += gridDim.x * blockDim.x) {
     auto nhits = foundNtuplets->size(it);
+    std::cout << "NHITS in NTUPLTES " << it << " : " << nhits << std::endl;
     if (nhits < 3)
       continue;
     if (quality[it] == trackQuality::dup)
       continue;
-    assert(quality[it] == trackQuality::bad);
+    // assert(quality[it] == trackQuality::bad);
     if (nhits > 5)
       printf("wrong mult %d %d\n", it, nhits);
     assert(nhits < 8);
@@ -343,7 +347,9 @@ __global__ void kernel_fillMultiplicity(HitContainer const *__restrict__ foundNt
     if (nhits > 5)
       printf("wrong mult %d %d\n", it, nhits);
     assert(nhits < 8);
+    std::cout << "Before fill direct" << std::endl;
     tupleMultiplicity->fillDirect(nhits, it);
+    std::cout << "After fill direct" << std::endl;
   }
 }
 
@@ -453,6 +459,7 @@ __global__ void kernel_fillHitInTracks(HitContainer const *__restrict__ tuples,
     if (quality[idx] != trackQuality::loose)
       continue;
     for (auto h = tuples->begin(idx); h != tuples->end(idx); ++h){
+      std::cout << "vado a fillare" << '\n';
       hitToTuple->fillDirect(*h, idx);
     }
   }
@@ -471,9 +478,8 @@ __global__ void kernel_fillHitDetIndices(HitContainer const *__restrict__ tuples
   auto nhits = hh.nHits();
   for (int idx = first, ntot = tuples->size(); idx < ntot; idx += gridDim.x * blockDim.x) {
     assert(tuples->bins[idx] < nhits);
-    std::cout << "tuples->bins[idx] " << tuples->bins[idx] << '\n'; 
     hitDetIndices->bins[idx] = hh.detectorIndex(tuples->bins[idx]);
-    std::cout << "detectorIndex(tuples->bins[idx]) " << hh.detectorIndex(tuples->bins[idx]) << '\n';   // Printa sempre 10, 9 e 8.
+    // std::cout << "detectorIndex(tuples->bins[idx]) " << hh.detectorIndex(tuples->bins[idx]) << '\n';   // Printa sempre 10, 9 e 8.
   }
 }
 

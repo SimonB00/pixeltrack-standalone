@@ -201,9 +201,13 @@ namespace cms {
       }
 
       __host__ __device__ __forceinline__ void fillDirect(T b, index_type j) {
+        std::cout << "FILLDIRECT " << std::endl;
         assert(b < nbins());
+        std::cout << "W " << off[b] << std::endl;
         auto w = atomicDecrement(off[b]);
+        std::cout << "W2 " << w << std::endl;
         assert(w > 0);
+        
         bins[w - 1] = j;
       }
 

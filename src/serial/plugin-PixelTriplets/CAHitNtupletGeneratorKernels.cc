@@ -28,14 +28,19 @@ void CAHitNtupletGeneratorKernelsCPU::buildDoublets(HitsOnCPU const &hh, cudaStr
   device_isOuterHitOfCell_.reset(
       (GPUCACell::OuterHitOfCell *)malloc(std::max(1U, nhits) * sizeof(GPUCACell::OuterHitOfCell)));
   assert(device_isOuterHitOfCell_.get());
-
+  
+  std::cout << "maxnumofactivedoublets " << CAConstants::maxNumOfActiveDoublets() << " sizeof CellNeighbors" <<  sizeof(GPUCACell::CellNeighbors) << std::endl;
+  std::cout << "maxnumofactivedoublets " << CAConstants::maxNumOfActiveDoublets() << " sizeof CellTracks" <<  sizeof(GPUCACell::CellTracks) << std::endl;
   cellStorage_.reset((unsigned char *)malloc(CAConstants::maxNumOfActiveDoublets() * sizeof(GPUCACell::CellNeighbors) +
                                              CAConstants::maxNumOfActiveDoublets() * sizeof(GPUCACell::CellTracks)));
+  std::cout << "After first reset " << std::endl;
+  assert(cellStorage_.get());
   device_theCellNeighborsContainer_ = (GPUCACell::CellNeighbors *)cellStorage_.get();
+
   device_theCellTracksContainer_ =
       (GPUCACell::CellTracks *)(cellStorage_.get() +
                                 CAConstants::maxNumOfActiveDoublets() * sizeof(GPUCACell::CellNeighbors));
-
+  std::cout << "After second reset " << std::endl;
   gpuPixelDoublets::initDoublets(device_isOuterHitOfCell_.get(),
                                  nhits,
                                  device_theCellNeighbors_.get(),
@@ -45,6 +50,7 @@ void CAHitNtupletGeneratorKernelsCPU::buildDoublets(HitsOnCPU const &hh, cudaStr
 
   // device_theCells_ = Traits:: template make_unique<GPUCACell[]>(cs, m_params.maxNumberOfDoublets_, stream);
   device_theCells_.reset((GPUCACell *)malloc(sizeof(GPUCACell) * m_params.maxNumberOfDoublets_));
+  std::cout << "After third reset " << std::endl;
   if (0 == nhits)
     return;  // protect against empty events
 
@@ -80,7 +86,9 @@ void CAHitNtupletGeneratorKernelsCPU::launchKernels(HitsOnCPU const &hh, TkSoA *
   assert(tuples_d && quality_d);
 
   // zero tuples
+  std::cout << "Before LaunchZero " << std::endl;
   cms::cuda::launchZero(tuples_d, cudaStream);
+  std::cout << "After LaunchZero " << std::endl;
 
   auto nhits = hh.nHits();
   assert(nhits <= pixelGPUConstants::maxNumberOfHits);
@@ -106,10 +114,13 @@ void CAHitNtupletGeneratorKernelsCPU::launchKernels(HitsOnCPU const &hh, TkSoA *
                  m_params.dcaCutInnerTriplet_,
                  m_params.dcaCutOuterTriplet_);
 
-  //if (nhits > 1 && m_params.earlyFishbone_) {
-  //  gpuPixelDoublets::fishbone(
-  //      hh.view(), device_theCells_.get(), device_nCells_, device_isOuterHitOfCell_.get(), nhits, false);
-  //}
+  std::cout << "After kernel_connect " << std::endl;
+  if (nhits > 1 && m_params.earlyFishbone_) {
+   gpuPixelDoublets::fishbone(
+       hh.view(), device_theCells_.get(), device_nCells_, device_isOuterHitOfCell_.get(), nhits, false);
+  }
+
+  std::cout << "AFTer fishbone1 " << std::endl;
 
   kernel_find_ntuplets(hh.view(),
                        device_theCells_.get(),
@@ -119,22 +130,28 @@ void CAHitNtupletGeneratorKernelsCPU::launchKernels(HitsOnCPU const &hh, TkSoA *
                        device_hitTuple_apc_,
                        quality_d,
                        m_params.minHitsPerNtuplet_);
-  if (m_params.doStats_)
-    kernel_mark_used(hh.view(), device_theCells_.get(), device_nCells_);
+  std::cout << "After kernel_find_ntuplets " << std::endl;
+  // if (m_params.doStats_)
+  //   kernel_mark_used(hh.view(), device_theCells_.get(), device_nCells_);
 
   cms::cuda::finalizeBulk(device_hitTuple_apc_, tuples_d);
-
+  std::cout << "agfter finalizebulk " << std::endl;
   // remove duplicates (tracks that share a doublet)
   kernel_earlyDuplicateRemover(device_theCells_.get(), device_nCells_, tuples_d, quality_d);
-
+  std::cout << "agfter kernel_earlyDuplicateRemover " << std::endl; 
   kernel_countMultiplicity(tuples_d, quality_d, device_tupleMultiplicity_.get());
+  std::cout << "agfter kernel_countMultiplicity " << std::endl; 
   cms::cuda::launchFinalize(device_tupleMultiplicity_.get(), cudaStream);
+  std::cout << "agfter launchFinalize " << std::endl; 
+  
   kernel_fillMultiplicity(tuples_d, quality_d, device_tupleMultiplicity_.get());
-
-  //if (nhits > 1 && m_params.lateFishbone_) {
-  //  gpuPixelDoublets::fishbone(
-  //      hh.view(), device_theCells_.get(), device_nCells_, device_isOuterHitOfCell_.get(), nhits, true);
-  //}
+  std::cout << "agfter kernel_fillMultiplicity " << std::endl; 
+  if (nhits > 1 && m_params.lateFishbone_) {
+   gpuPixelDoublets::fishbone(
+       hh.view(), device_theCells_.get(), device_nCells_, device_isOuterHitOfCell_.get(), nhits, true);
+  }
+  std::cout << "agfter fishbone2 " << std::endl; 
+  
 
   //if (m_params.doStats_) {    // Qui non ci entra
   //  kernel_checkOverflows(tuples_d,

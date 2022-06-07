@@ -54,7 +54,12 @@ namespace gpuPixelDoublets {
     using Hist = TrackingRecHit2DSOAView::Hist;
 
     auto const& __restrict__ hist = hh.phiBinner();
+    // std::cout << " LOOPING OVER PHI BINNER " <<  hist.size() << std::endl;
+    // for(auto & pb : hist){
+    //   std::cout << pb << std::endl;
+    // }
     auto const* offsets = hh.hitsLayerStart(); 
+
 
     assert(offsets);
 
@@ -72,7 +77,8 @@ namespace gpuPixelDoublets {
       for (uint32_t i = 1; i < nPairs; ++i) {
         innerLayerCumulativeSize[i] = innerLayerCumulativeSize[i - 1] + layerSize(layerPairs[2 * i]);
       }
-      ntot = innerLayerCumulativeSize[nPairs - 1];    // 52541
+      ntot = innerLayerCumulativeSize[nPairs - 1];
+      std::cout << "ntot " << ntot << std::endl;
     }
     __syncthreads();
     // x runs faster
@@ -94,8 +100,8 @@ namespace gpuPixelDoublets {
 
       uint8_t inner = layerPairs[2 * pairLayerId];
       uint8_t outer = layerPairs[2 * pairLayerId + 1];
-      ////std::cout7 << "inner" << unsigned(inner) << '\n';
-      //std::cout7 << "outer" << unsigned(outer) << '\n';
+      // std::cout << "inner" << unsigned(inner) << '\n';
+      // std::cout << "outer" << unsigned(outer) << '\n';
       assert(outer > inner);
 
       auto hoff = Hist::histOff(outer);
@@ -209,9 +215,10 @@ namespace gpuPixelDoublets {
           nmin += hist.size(kk + hoff);
 #endif
         //std::cout << "kk " << kk << '\n';      // printa 126
-        //std::cout << "hoff " << hoff << '\n';  // printa 256
+        // std::cout << " kk " << kk << " hoff " << hoff << '\n';  // printa 256
         //std::cout << hist.bins[0] << '\n';     // printa 0
         //TrackingRecHit2DSOAView::Hist hist2;
+        
         auto const* __restrict__ p = hist.begin(kk + hoff);
         auto const* __restrict__ e = hist.end(kk + hoff);
         //std::cout << "nbins " << hist2.nbins() << '\n';
@@ -230,10 +237,9 @@ namespace gpuPixelDoublets {
         //std::cout << "FIRST " << first << " Stride " << stride << std::endl;
         for (; p < e; p += stride) {
           //std::cout << "p,e,stride " << p << ' ' << e << ' ' << stride << '\n';   // see above
-          auto oi = __ldg(p);
-          std::cout << "oi " << oi << '\n';
-          std::cout << "offsets[outer]" << offsets[outer] << '\n';
-          std::cout << "offsets[outer+1]" << offsets[outer+1] << '\n';
+          // auto oi = __ldg(p);
+          auto oi = *p;
+          // std::cout << "oi : " << oi << " offsets[outer] : " << offsets[outer] << std::endl;
           assert(oi >= offsets[outer]);
           assert(oi < offsets[outer + 1]);
           //auto mo = hh.detectorIndex(oi);   // what is this?
@@ -263,9 +269,7 @@ namespace gpuPixelDoublets {
           cells[ind].init(*cellNeighbors, *cellTracks, hh, pairLayerId, ind, i, oi);
           //std::cout << "cells " << cells[ind].get_inner_x(hh) << '\n';
           //std::cout << "cells " << cells[ind].get_outer_x(hh) << '\n';
-          std::cout << i << '\n';
-          std::cout << "inner x" << cells[ind].get_inner_detIndex(hh) << '\n';
-          std::cout << "outer x" << cells[ind].get_outer_detIndex(hh) << '\n';
+          //std::cout << "inner x" << cells[ind].get_inner_x(hh) << '\n';
           isOuterHitOfCell[oi].push_back(ind);
 #ifdef GPU_DEBUG
           if (isOuterHitOfCell[oi].full())
