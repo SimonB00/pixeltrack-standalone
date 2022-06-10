@@ -6,6 +6,7 @@
 #include <cassert>
 #include <functional>
 #include <vector>
+#include <fstream>
 
 #include "Framework/Event.h"
 
@@ -115,7 +116,6 @@ PixelTrackHeterogeneous CAHitNtupletGeneratorOnGPU::makeTuples(TrackingRecHit2DC
   if (0 == hits_d.nHits())
     return tracks;
 
-  //std::cout << soa->hitIndices << '\n';
   // now fit
   HelixFitOnGPU fitter(bfield, m_params.fit5as4_);
   fitter.allocateOnGPU(&(soa->hitIndices), kernels.tupleMultiplicity(), soa);
@@ -129,8 +129,15 @@ PixelTrackHeterogeneous CAHitNtupletGeneratorOnGPU::makeTuples(TrackingRecHit2DC
   std::cout << " berfore classifytuple " << std::endl;
   kernels.classifyTuples(hits_d, soa, nullptr);
   std::cout << " after classifyTuples " << std::endl;
-  // for(auto & hi : tracks->hitIndices){
-  //   // std::cout << " makeTuples HI " << hi << std::endl;
-  // }
+  
+  // Write the tracks on a file
+  std::string trackPath = "/home/simonb/documents/thesis/tracksData/tracks6000.dat";
+  std::ofstream trackFile;
+  trackFile.open(trackPath);
+  for(auto & hi : soa->hitIndices){
+    std::cout << " makeTuples HI " << hi << std::endl;
+    trackFile << hi << '\n';
+  }
+  trackFile.close();
   return tracks;
 }
