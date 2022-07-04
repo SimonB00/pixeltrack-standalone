@@ -134,7 +134,7 @@ PixelTrackHeterogeneous CAHitNtupletGeneratorOnGPU::makeTuples(TrackingRecHit2DC
   std::string trackPath = "/home/simonb/documents/thesis/tracksData/tracks6000.dat";
   std::ofstream trackFile;
   trackFile.open(trackPath);
-  int ind = 0;
+  //int ind = 0;
   //for(auto & hi : soa->hitIndices.off[soa->hitIndices.totbins()]){
   //  std::cout << " makeTuples HI " << hi << std::endl;
   //  trackFile << "First" << soa->hitIndices.off[ind] << '\n';
