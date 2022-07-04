@@ -136,6 +136,7 @@ PixelTrackHeterogeneous CAHitNtupletGeneratorOnGPU::makeTuples(TrackingRecHit2DC
   trackFile.open(trackPath);
   for(auto & hi : soa->hitIndices){
     std::cout << " makeTuples HI " << hi << std::endl;
+    trackFile << soa->hitIndices->capacity() << '\n';
     trackFile << hi << '\n';
   }
   trackFile.close();
