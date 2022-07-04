@@ -5,7 +5,7 @@
 
 namespace gpuPixelDoublets {
 
-  constexpr int nPairs = 20;    // Devo cambiare npairs
+  constexpr int nPairs = 4;    // Devo cambiare npairs
   static_assert(nPairs <= CAConstants::maxNumberOfLayerPairs());
 
   // start constants
@@ -23,12 +23,24 @@ namespace gpuPixelDoublets {
   };
   */
   
+  //constexpr uint8_t layerPairs[2 * nPairs] = {
+  //  0, 1, 1, 2, 2, 3, 0, 4, 0, 11, 1, 4, 1, 11, 2, 4, 2, 11, 3, 4, 3, 11,
+  //  4, 5, 5, 6, 11, 12, 12, 13
+  //  //0, 1, 1, 2, 2, 3,                                // BV8
+  //  //4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10,             // DV7
+  //  //11, 12, 12, 13, 13, 14, 14, 15, 15, 16, 16, 17,  // DV9
+  //  //0, 4, 1, 4,                                      // BV8DV7
+  //  //0, 2, 1, 2, 2, 3                                 // BV8DV9
+  //};
+
   constexpr uint8_t layerPairs[2 * nPairs] = {
-    0, 1, 1, 2, 2, 3,                                // BV8
-    4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10,             // DV7
-    11, 12, 12, 13, 13, 14, 14, 15, 15, 16, 16, 17,  // DV9
-    0, 4, 1, 4,                                      // BV8DV7
-    0, 2, 1, 2, 2, 3                                 // BV8DV9
+    0, 4, 4, 5, 5, 6, 6, 7
+    //0, 11, 11, 12, 12, 13, 13, 14,
+    //0, 1, 1, 2, 2, 3                                // BV8
+    //4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10,             // DV7
+    //11, 12, 12, 13, 13, 14, 14, 15, 15, 16, 16, 17,  // DV9
+    //0, 4, 1, 4,                                      // BV8DV7
+    //0, 2, 1, 2, 2, 3                                 // BV8DV9
   };
 
   // constexpr uint8_t layerPairs[2 * nPairs] = {
@@ -54,33 +66,33 @@ namespace gpuPixelDoublets {
   constexpr int16_t phi0p07 = 703;  // round(730.12648...) = phi2short(0.07);
 
   constexpr int16_t phicuts[nPairs]{phi0p05,
-                                    phi0p07,
-                                    phi0p07,
-                                    phi0p05,
-                                    phi0p06,
-                                    phi0p06,
                                     phi0p05,
                                     phi0p05,
-                                    phi0p06,
-                                    phi0p06,
-                                    phi0p06,
-                                    phi0p05,
-                                    phi0p05,
-                                    phi0p05,
-                                    phi0p05,
-                                    phi0p05,
-                                    phi0p05,
-                                    phi0p05,
-                                    phi0p05,
-                                    phi0p07};
+                                    phi0p05
+                                    //phi0p05,
+                                    //phi0p05,
+                                    //phi0p05,
+                                    //phi0p05,
+                                    //phi0p05,
+                                    //phi0p05,
+                                    //phi0p05
+                                    //phi0p07,
+                                    //phi0p07,
+                                    //phi0p07,
+                                    //phi0p07,
+                                    //phi0p05,
+                                    //phi0p05,
+                                    //phi0p05,
+                                    //phi0p05,
+                                    /*phi0p07*/};
   //   phi0p07, phi0p07, phi0p06,phi0p06, phi0p06,phi0p06};  // relaxed cuts
 
-  constexpr float minz[nPairs] = {
-      -20., 0., -30., -22., 10., -30., -70., -70., -22., 15., -30, -70., -70., -20., -22., 0, -30., -70., -70.};
-  constexpr float maxz[nPairs] = {
-      20., 30., 0., 22., 30., -10., 70., 70., 22., 30., -15., 70., 70., 20., 22., 30., 0., 70., 70.};
-  constexpr float maxr[nPairs] = {
-      20., 9., 9., 20., 7., 7., 5., 5., 20., 6., 6., 5., 5., 20., 20., 9., 9., 9., 9.};
+  //constexpr float minz[nPairs] = {
+  //    -20., 0., -30., -22., 10., -30., -70., -70., -22., 15., -30, -70., -70., -20., -22., 0, -30., -70., -70.};
+  //constexpr float maxz[nPairs] = {
+  //    20., 30., 0., 22., 30., -10., 70., 70., 22., 30., -15., 70., 70., 20., 22., 30., 0., 70., 70.};
+  //constexpr float maxr[nPairs] = {
+  //    20., 9., 9., 20., 7., 7., 5., 5., 20., 6., 6., 5., 5., 20., 20., 9., 9., 9., 9.};
 
   // end constants
   // clang-format on
@@ -143,9 +155,6 @@ namespace gpuPixelDoublets {
                       hh,
                       isOuterHitOfCell,
                       phicuts,
-                      minz,
-                      maxz,
-                      maxr,
                       ideal_cond,
                       doClusterCut,
                       doZ0Cut,

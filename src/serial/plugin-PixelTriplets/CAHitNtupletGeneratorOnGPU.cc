@@ -47,7 +47,7 @@ using namespace std;
 CAHitNtupletGeneratorOnGPU::CAHitNtupletGeneratorOnGPU(edm::ProductRegistry& reg)
     : m_params(false,             // onGPU
                3,                 // minHitsPerNtuplet,
-               458752,            // maxNumberOfDoublets
+               4587520,            // maxNumberOfDoublets
                false,             //useRiemannFit
                true,              // fit5as4,
                true,              //includeJumpingForwardDoublets
@@ -117,28 +117,45 @@ PixelTrackHeterogeneous CAHitNtupletGeneratorOnGPU::makeTuples(TrackingRecHit2DC
     return tracks;
 
   // now fit
-  HelixFitOnGPU fitter(bfield, m_params.fit5as4_);
-  fitter.allocateOnGPU(&(soa->hitIndices), kernels.tupleMultiplicity(), soa);
-  std::cout << " AFTER allocateOnGPUfitter" << std::endl;
-  
-  if (m_params.useRiemannFit_) {
-    fitter.launchRiemannKernelsOnCPU(hits_d.view(), hits_d.nHits(), CAConstants::maxNumberOfQuadruplets());
-  } else {
-    fitter.launchBrokenLineKernelsOnCPU(hits_d.view(), hits_d.nHits(), CAConstants::maxNumberOfQuadruplets());
-  }
-  std::cout << " berfore classifytuple " << std::endl;
-  kernels.classifyTuples(hits_d, soa, nullptr);
-  std::cout << " after classifyTuples " << std::endl;
+  //HelixFitOnGPU fitter(bfield, m_params.fit5as4_);
+  //fitter.allocateOnGPU(&(soa->hitIndices), kernels.tupleMultiplicity(), soa);
+  //std::cout << " AFTER allocateOnGPUfitter" << std::endl;
+  //
+  //if (m_params.useRiemannFit_) {
+  //  fitter.launchRiemannKernelsOnCPU(hits_d.view(), hits_d.nHits(), CAConstants::maxNumberOfQuadruplets());
+  //} else {
+  //  fitter.launchBrokenLineKernelsOnCPU(hits_d.view(), hits_d.nHits(), CAConstants::maxNumberOfQuadruplets());
+  //}
+  //std::cout << " berfore classifytuple " << std::endl;
+  //kernels.classifyTuples(hits_d, soa, nullptr);
+  //std::cout << " after classifyTuples " << std::endl;
   
   // Write the tracks on a file
   std::string trackPath = "/home/simonb/documents/thesis/tracksData/tracks6000.dat";
   std::ofstream trackFile;
   trackFile.open(trackPath);
-  for(auto & hi : soa->hitIndices){
-    std::cout << " makeTuples HI " << hi << std::endl;
-    trackFile << soa->hitIndices->capacity() << '\n';
-    trackFile << hi << '\n';
+  int ind = 0;
+  //for(auto & hi : soa->hitIndices.off[soa->hitIndices.totbins()]){
+  //  std::cout << " makeTuples HI " << hi << std::endl;
+  //  trackFile << "First" << soa->hitIndices.off[ind] << '\n';
+  //  std::cout << soa->hitIndices.off[ind] << '\n';
+  //  ++ind; 
+  //  trackFile << hi << '\n';
+  //}
+  auto prev_ = 0;
+  auto nNtuplets = 0;
+  //soa->hitIndices.totbins()
+  for(auto & off_ : soa->hitIndices.off){
+    //std::cout << "off" << off_ << '\n';
+    ++nNtuplets;
+    int size_ = off_ - prev_;
+    std::cout << size_ << '\n';
+    for(int j = 0; j < size_; ++j) {
+      std::cout << soa->hitIndices.bins[j + off_] << '\n';
+    }
+    prev_ = off_;
   }
+  std::cout << "nNtuplets " << nNtuplets << '\n';
   trackFile.close();
   return tracks;
 }

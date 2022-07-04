@@ -32,9 +32,6 @@ namespace gpuPixelDoublets {
                                                     TrackingRecHit2DSOAView const& __restrict__ hh,
                                                     GPUCACell::OuterHitOfCell* isOuterHitOfCell,
                                                     int16_t const* __restrict__ phicuts,
-                                                    float const* __restrict__ minz,
-                                                    float const* __restrict__ maxz,
-                                                    float const* __restrict__ maxr,
                                                     bool ideal_cond,
                                                     bool doClusterCut,
                                                     bool doZ0Cut,
@@ -162,9 +159,9 @@ namespace gpuPixelDoublets {
       auto mer = hh.rGlobal(i);
       // all cuts: true if fails
       constexpr float z0cut = 12.f;      // cm
-      constexpr float hardPtCut = 0.5f;  // GeV
+      constexpr float hardPtCut = 1.f;  // GeV
       constexpr float minRadius =
-          hardPtCut * 87.78f;  // cm (1 GeV track has 1 GeV/c / (e * 3.8T) ~ 87 cm radius in a 3.8T field)
+          hardPtCut * 2 * 87.78f;  // cm (1 GeV track has 1 GeV/c / (e * 3.8T) ~ 87 cm radius in a 3.8T field)
       constexpr float minRadius2T4 = 4.f * minRadius * minRadius;
       auto ptcut = [&](int j, int16_t idphi) {
         auto r2t4 = minRadius2T4;
@@ -173,12 +170,12 @@ namespace gpuPixelDoublets {
         auto dphi = short2phi(idphi);
         return dphi * dphi * (r2t4 - ri * ro) > (ro - ri) * (ro - ri);
       };
-      auto z0cutoff = [&](int j) {
-        auto zo = hh.zGlobal(j);
-        auto ro = hh.rGlobal(j);
-        auto dr = ro - mer;
-        return dr > maxr[pairLayerId] || dr < 0 || std::abs((mez * ro - mer * zo)) > z0cut * dr;
-      };
+      //auto z0cutoff = [&](int j) {
+      //  auto zo = hh.zGlobal(j);
+      //  auto ro = hh.rGlobal(j);
+      //  auto dr = ro - mer;
+      //  return dr > maxr[pairLayerId] || dr < 0 || std::abs((mez * ro - mer * zo)) > z0cut * dr;
+      //};
 
       auto zsizeCut = [&](int j) {
         auto onlyBarrel = outer < 4;
@@ -256,8 +253,8 @@ namespace gpuPixelDoublets {
 
           //if (doClusterCut && zsizeCut(oi))
           //  continue;
-          //if (doPtCut && ptcut(oi, idphi))
-          //  continue;
+          if (doPtCut && ptcut(oi, idphi))
+            continue;
 
           auto ind = atomicAdd(nCells, 1);
           //std::cout << "ind,maxdubl" << ind << ' ' << maxNumOfDoublets << '\n';
@@ -284,6 +281,7 @@ namespace gpuPixelDoublets {
 #endif
     }  // loop in block...
     //std::cout << "Fine di doubletsFromHist" << '\n';
+    std::cout << "max" << *nCells << '\n';
   }
 
 }  // namespace gpuPixelDoublets

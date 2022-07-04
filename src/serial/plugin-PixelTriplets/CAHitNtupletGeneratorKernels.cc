@@ -56,11 +56,11 @@ void CAHitNtupletGeneratorKernelsCPU::buildDoublets(HitsOnCPU const &hh, cudaStr
 
   // FIXME avoid magic numbers
   auto nActualPairs = gpuPixelDoublets::nPairs;
-  if (!m_params.includeJumpingForwardDoublets_)
-    nActualPairs = 15;
-  if (m_params.minHitsPerNtuplet_ > 3) {
-    nActualPairs = 13;
-  }
+  //if (!m_params.includeJumpingForwardDoublets_)
+  //  nActualPairs = 15;
+  //if (m_params.minHitsPerNtuplet_ > 3) {
+  //  nActualPairs = 13;
+  //}
 
   assert(nActualPairs <= gpuPixelDoublets::nPairs);
   gpuPixelDoublets::getDoubletsFromHisto(device_theCells_.get(),

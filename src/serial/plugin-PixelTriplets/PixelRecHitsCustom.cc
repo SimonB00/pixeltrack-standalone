@@ -19,7 +19,7 @@
 #include <cmath>
 
 
-std::string path = "/home/simonb/documents/thesis/not_sorted/";
+std::string path = "/data2/user/wredjeb/TrackML/pixeltrack-standalone/dataMLBlue/";
 
 //std::string path = "/data2/user/wredjeb/TrackML/pixeltrack-standalone/dataMLBlue/";
 int n_events = 1770;
