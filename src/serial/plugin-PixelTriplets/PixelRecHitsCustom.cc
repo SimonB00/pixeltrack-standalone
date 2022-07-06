@@ -19,7 +19,7 @@
 #include <cmath>
 
 
-std::string path = "/home/simonb/documents/thesis/not_sorted/";
+std::string path = "/home/simonb/documents/thesis/pixeltrack-standalone/";
 
 //std::string path = "/data2/user/wredjeb/TrackML/pixeltrack-standalone/dataMLBlue/";
 int n_events = 1770;
@@ -104,10 +104,14 @@ namespace pixelgpudetails {
     //std::string y_file_name = path + "y_ns" + std::to_string(file_number) + ".dat";
     //std::string z_file_name = path + "z_ns" + std::to_string(file_number) + ".dat";
     //std::string index_file_name = path + "globalIndexes_ns" + std::to_string(file_number) + ".dat";
-    std::string x_file_name = path + "x_blue" + std::to_string(file_number) + ".dat";
-    std::string y_file_name = path + "y_blue" + std::to_string(file_number) + ".dat";
-    std::string z_file_name = path + "z_blue" + std::to_string(file_number) + ".dat";
-    std::string index_file_name = path + "globalIndexes_blue" + std::to_string(file_number) + ".dat";
+    //std::string x_file_name = path + "x_blue" + std::to_string(file_number) + ".dat";
+    //std::string y_file_name = path + "y_blue" + std::to_string(file_number) + ".dat";
+    //std::string z_file_name = path + "z_blue" + std::to_string(file_number) + ".dat";
+    //std::string index_file_name = path + "globalIndexes_blue" + std::to_string(file_number) + ".dat";
+    std::string x_file_name = path + "x_P" + std::to_string(file_number) + ".dat";
+    std::string y_file_name = path + "y_P" + std::to_string(file_number) + ".dat";
+    std::string z_file_name = path + "z_P" + std::to_string(file_number) + ".dat";
+    std::string index_file_name = path + "globalIndexes_P" + std::to_string(file_number) + ".dat";
     //std::string phi_file_name = path + "phi_blue" + std::to_string(file_number) + ".dat";
 
     // Read the x_ns*.dat.dat file
@@ -129,6 +133,7 @@ namespace pixelgpudetails {
       // Create the vector containing all the y coordinates of the hits
       for(int i = 0; is_2 >> b; ++i) { 
         hits_y_coordinates.push_back(b); 
+        std::cout << b << '\n';
         }
       is_2.close();
 
