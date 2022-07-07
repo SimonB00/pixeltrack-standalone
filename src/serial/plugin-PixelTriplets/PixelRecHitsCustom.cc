@@ -133,7 +133,6 @@ namespace pixelgpudetails {
       // Create the vector containing all the y coordinates of the hits
       for(int i = 0; is_2 >> b; ++i) { 
         hits_y_coordinates.push_back(b); 
-        std::cout << b << '\n';
         }
       is_2.close();
 

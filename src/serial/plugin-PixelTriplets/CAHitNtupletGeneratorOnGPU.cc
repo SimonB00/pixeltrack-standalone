@@ -131,20 +131,24 @@ PixelTrackHeterogeneous CAHitNtupletGeneratorOnGPU::makeTuples(TrackingRecHit2DC
   //std::cout << " after classifyTuples " << std::endl;
   
   // Write the tracks on a file
-  std::string trackPath = "/home/simonb/documents/thesis/tracksData/tracksP6000.dat";
+  //std::string trackPath = "/home/simonb/documents/thesis/tracksData/tracksP6000.dat";
+  std::string trackPath = "/home/simonb/documents/thesis/tracksData/tracksPH6000.dat";
   std::ofstream trackFile;
   trackFile.open(trackPath);
-  //int ind = 0;
-  //for(auto & hi : soa->hitIndices.off[soa->hitIndices.totbins()]){
-  //  std::cout << " makeTuples HI " << hi << std::endl;
-  //  trackFile << "First" << soa->hitIndices.off[ind] << '\n';
-  //  std::cout << soa->hitIndices.off[ind] << '\n';
-  //  ++ind; 
-  //  trackFile << hi << '\n';
-  //}
-  for(auto & hi : soa->hitIndices) {
-    trackFile << hi << '\n';
+  int ind = 0;
+  for(auto & hi : soa->hitIndices.off) {
+    for(auto & ho : soa->hitIndices) {
+      //trackFile << "First" << soa->hitIndices.off[ind] << '\n';
+      std::cout << ho + hi << ' ';
+      std::cout << "ho: " << ho << ' ';
+      std::cout << "hi: " << hi << '\n';
+      trackFile << hi + ho << '\n';
+    }
   }
+  //for(auto & hi : soa->hitIndices) {
+  //  //trackFile << hi << '\n';
+  //  std::cout << hi + soa->hitIndices.off << '\n';
+  //}
   //auto prev_ = 0;
   //auto nNtuplets = 0;
   ////soa->hitIndices.totbins()
