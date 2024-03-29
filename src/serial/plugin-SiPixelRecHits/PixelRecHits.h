@@ -24,6 +24,7 @@ namespace pixelgpudetails {
                                  SiPixelClustersSoA const& clusters_d,
                                  BeamSpotPOD const& bs_d,
                                  pixelCPEforGPU::ParamsOnGPU const* cpeParams) const;
+	TrackingRecHit2DCPU makeHits(const std::string& fileName);
   };
 }  // namespace pixelgpudetails
 
