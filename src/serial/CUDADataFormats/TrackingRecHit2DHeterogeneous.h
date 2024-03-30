@@ -1,6 +1,7 @@
 #ifndef CUDADataFormats_TrackingRecHit_interface_TrackingRecHit2DHeterogeneous_h
 #define CUDADataFormats_TrackingRecHit_interface_TrackingRecHit2DHeterogeneous_h
 
+#include <cstdint>
 #include "CUDADataFormats/TrackingRecHit2DSOAView.h"
 #include "CUDADataFormats/HeterogeneousSoA.h"
 
@@ -17,6 +18,10 @@ public:
   explicit TrackingRecHit2DHeterogeneous(uint32_t nHits,
                                          pixelCPEforGPU::ParamsOnGPU const* cpeParams,
                                          uint32_t const* hitsModuleStart,
+                                         cudaStream_t stream);
+  explicit TrackingRecHit2DHeterogeneous(uint32_t nHits,
+                                         const HitsCoordsSoaView& hits,
+                                         const std::vector<uint32_t>& layerStart,
                                          cudaStream_t stream);
 
   ~TrackingRecHit2DHeterogeneous() = default;
@@ -60,16 +65,18 @@ private:
 };
 
 template <typename Traits>
-TrackingRecHit2DHeterogeneous<Traits>::TrackingRecHit2DHeterogeneous(uint32_t nHits,
-                                                                     pixelCPEforGPU::ParamsOnGPU const* cpeParams,
-                                                                     uint32_t const* hitsModuleStart,
-                                                                     cudaStream_t stream)
+TrackingRecHit2DHeterogeneous<Traits>::TrackingRecHit2DHeterogeneous(
+    uint32_t nHits,
+    pixelCPEforGPU::ParamsOnGPU const* cpeParams,
+    uint32_t const* hitsModuleStart,
+    cudaStream_t stream)
     : m_nHits(nHits), m_hitsModuleStart(hitsModuleStart) {
   auto view = Traits::template make_host_unique<TrackingRecHit2DSOAView>(stream);
 
   view->m_nHits = nHits;
   m_view = Traits::template make_device_unique<TrackingRecHit2DSOAView>(stream);
-  m_AverageGeometryStore = Traits::template make_device_unique<TrackingRecHit2DSOAView::AverageGeometry>(stream);
+  m_AverageGeometryStore =
+      Traits::template make_device_unique<TrackingRecHit2DSOAView::AverageGeometry>(stream);
   view->m_averageGeometry = m_AverageGeometryStore.get();
   view->m_cpeParams = cpeParams;
   view->m_hitsModuleStart = hitsModuleStart;
@@ -116,6 +123,33 @@ TrackingRecHit2DHeterogeneous<Traits>::TrackingRecHit2DHeterogeneous(uint32_t nH
 
   // transfer view
   m_view.reset(view.release());  // NOLINT: std::move() breaks CUDA version
+}
+
+template <typename Traits>
+TrackingRecHit2DHeterogeneous<Traits>::TrackingRecHit2DHeterogeneous(
+    uint32_t nHits,
+    const HitsCoordsSoaView& hits,
+    const std::vector<uint32_t>& layerStart,
+    cudaStream_t stream)
+    : m_nHits{nHits} {
+  auto view = Traits::template make_host_unique<TrackingRecHit2DSOAView>(stream);
+
+  m_view = Traits::template make_device_unique<TrackingRecHit2DSOAView>(stream);
+  view->m_nHits = nHits;
+  m_HistStore = Traits::template make_device_unique<TrackingRecHit2DSOAView::Hist>(stream);
+  m_hist = view->m_hist = m_HistStore.get();  // release?
+
+  view->m_xg = hits.x;
+  view->m_yg = hits.y;
+  view->m_zg = hits.z;
+  view->m_rg = hits.r;
+  view->m_detInd = hits.global_indexes;
+  m_iphi = view->m_iphi = hits.phi;
+  m_hitsLayerStart = view->m_hitsLayerStart = layerStart_.data();
+
+  cms::cuda::fillManyFromVector(
+      view->m_hist, 10, view->m_iphi, view->m_hitsLayerStart, nHits, 256);
+  m_view.reset(view.release());
 }
 
 using TrackingRecHit2DCPU = TrackingRecHit2DHeterogeneous<cms::cudacompat::CPUTraits>;
