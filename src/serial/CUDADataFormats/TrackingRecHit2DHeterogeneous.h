@@ -20,7 +20,7 @@ public:
                                          uint32_t const* hitsModuleStart,
                                          cudaStream_t stream);
   explicit TrackingRecHit2DHeterogeneous(uint32_t nHits,
-                                         const HitsCoordsSoaView& hits,
+                                         const HitsCoordsSoAView& hits,
                                          const std::vector<uint32_t>& layerStart,
                                          cudaStream_t stream);
 
@@ -42,7 +42,7 @@ public:
   auto iphi() { return m_iphi; }
 
 private:
-  static constexpr uint32_t n16 = 4;
+  static constexpr uint32_t n16 = 0;
   static constexpr uint32_t n32 = 9;
   static_assert(sizeof(uint32_t) == sizeof(float));  // just stating the obvious
 
