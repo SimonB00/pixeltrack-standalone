@@ -24,7 +24,7 @@ public:
                                          cudaStream_t stream);
   explicit TrackingRecHit2DHeterogeneous(uint32_t nHits,
                                          const HitsCoordsSoAView* hits,
-                                         const std::vector<uint32_t>& layerStart,
+                                         std::vector<uint32_t>& layerStart,
                                          cudaStream_t stream);
 
   ~TrackingRecHit2DHeterogeneous() = default;
@@ -132,7 +132,7 @@ template <typename Traits>
 TrackingRecHit2DHeterogeneous<Traits>::TrackingRecHit2DHeterogeneous(
     uint32_t nHits,
     const HitsCoordsSoAView* hits,
-    const std::vector<uint32_t>& layerStart,
+    std::vector<uint32_t>& layerStart,
     cudaStream_t stream)
     : m_nHits{nHits} {
   auto view = Traits::template make_host_unique<TrackingRecHit2DSOAView>(stream);
