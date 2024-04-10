@@ -5,6 +5,8 @@
 #include "CUDADataFormats/TrackingRecHit2DSOAView.h"
 #include "CUDADataFormats/HeterogeneousSoA.h"
 
+#include "DataFormats/HitsCoordsSoA.h"
+
 template <typename Traits>
 class TrackingRecHit2DHeterogeneous {
 public:

@@ -10,26 +10,10 @@
 #include "plugin-SiPixelClusterizer/SiPixelRawToClusterGPUKernel.h"  // !
 #include "plugin-SiPixelClusterizer/gpuClusteringConstants.h"        // !
 
+#include "DataFormats/HitsCoordsSoA.h"
+
 #include "PixelRecHits.h"
 #include "gpuPixelRecHits.h"
-
-struct HitsCoordsSoA {
-  std::vector<float> x;
-  std::vector<float> y;
-  std::vector<float> z;
-  std::vector<float> r;
-  std::vector<float> phi;
-  std::vector<int> global_indexes;
-
-  struct HitsCoordsSoAView {
-    float* x;
-    float* y;
-    float* z;
-    float* r;
-    float* phi;
-    int* global_indexes;
-  };
-};
 
 namespace {
   void setHitsLayerStart(uint32_t const* __restrict__ hitsModuleStart,
