@@ -14,6 +14,7 @@ public:
   using unique_ptr = typename Traits::template unique_ptr<T>;
 
   using Hist = TrackingRecHit2DSOAView::Hist;
+  using HitsCoordsSoAView = HitsCoordsSoA::HitsCoordsSoAView;
 
   TrackingRecHit2DHeterogeneous() = default;
 
@@ -22,7 +23,7 @@ public:
                                          uint32_t const* hitsModuleStart,
                                          cudaStream_t stream);
   explicit TrackingRecHit2DHeterogeneous(uint32_t nHits,
-                                         const HitsCoordsSoAView& hits,
+                                         const HitsCoordsSoAView* hits,
                                          const std::vector<uint32_t>& layerStart,
                                          cudaStream_t stream);
 
@@ -130,7 +131,7 @@ TrackingRecHit2DHeterogeneous<Traits>::TrackingRecHit2DHeterogeneous(
 template <typename Traits>
 TrackingRecHit2DHeterogeneous<Traits>::TrackingRecHit2DHeterogeneous(
     uint32_t nHits,
-    const HitsCoordsSoaView& hits,
+    const HitsCoordsSoAView* hits,
     const std::vector<uint32_t>& layerStart,
     cudaStream_t stream)
     : m_nHits{nHits} {
@@ -141,13 +142,13 @@ TrackingRecHit2DHeterogeneous<Traits>::TrackingRecHit2DHeterogeneous(
   m_HistStore = Traits::template make_device_unique<TrackingRecHit2DSOAView::Hist>(stream);
   m_hist = view->m_hist = m_HistStore.get();  // release?
 
-  view->m_xg = hits.x;
-  view->m_yg = hits.y;
-  view->m_zg = hits.z;
-  view->m_rg = hits.r;
-  view->m_detInd = hits.global_indexes;
-  m_iphi = view->m_iphi = hits.phi;
-  m_hitsLayerStart = view->m_hitsLayerStart = layerStart_.data();
+  view->m_xg = hits->x;
+  view->m_yg = hits->y;
+  view->m_zg = hits->z;
+  view->m_rg = hits->r;
+  view->m_detInd = hits->global_indexes;
+  m_iphi = view->m_iphi = hits->phi;
+  m_hitsLayerStart = view->m_hitsLayerStart = layerStart.data();
 
   cms::cuda::fillManyFromVector(
       view->m_hist, 10, view->m_iphi, view->m_hitsLayerStart, nHits, 256);

@@ -1,7 +1,11 @@
 // C++ headers
 #include <algorithm>
+#include <cmath>
 #include <cstdint>
+#include <fstream>
+#include <iostream>
 #include <numeric>
+#include <sstream>
 #include <string>
 
 // CMSSW headers
@@ -37,11 +41,6 @@ namespace {
 
 namespace pixelgpudetails {
 
-  HitsCoordsSoAView view() {
-    return HitsCoordsSoAView{
-        x.data(), y.data(), z.data(), r.data(), phi.data(), global_indexes.data()};
-  };
-
   TrackingRecHit2DCPU PixelRecHitGPUKernel::makeHits(
       SiPixelDigisSoA const& digis_d,
       SiPixelClustersSoA const& clusters_d,
@@ -67,11 +66,11 @@ namespace pixelgpudetails {
     return hits_d;
   }
 
-  TrackingRecHit2DCPU::makeHits(const std::string& fileName) {
+  TrackingRecHit2DCPU PixelRecHitGPUKernel::makeHits(const std::string& fileName) {
     HitsCoordsSoA hits;
     uint32_t nHits{};
 
-    std::fstream iFile(fileName);
+    std::ifstream iFile(fileName);
     if (!iFile.is_open()) {
       std::cerr << "Error opening file" << std::endl;
     }
@@ -89,7 +88,8 @@ namespace pixelgpudetails {
       getline(fileStream, temp, ',');
       float y{std::stof(temp)};
       hits.y.push_back(y);
-      getline(fileStream, temp, ',') hits.z.push_back(std::stof(temp));
+      getline(fileStream, temp, ',');
+	  hits.z.push_back(std::stof(temp));
 
       hits.r.push_back(std::sqrt(x * x + y * y));
 
