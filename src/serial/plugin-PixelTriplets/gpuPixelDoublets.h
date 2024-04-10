@@ -1,6 +1,7 @@
 #ifndef RecoLocalTracker_SiPixelRecHits_plugins_gpuPixelDoublets_h
 #define RecoLocalTracker_SiPixelRecHits_plugins_gpuPixelDoublets_h
 
+#include <cstdint>
 #include "gpuPixelDoubletsAlgos.h"
 
 namespace gpuPixelDoublets {
@@ -43,25 +44,26 @@ namespace gpuPixelDoublets {
   constexpr int16_t phi0p06 = 626;  // round(625.82270...) = phi2short(0.06);
   constexpr int16_t phi0p07 = 730;  // round(730.12648...) = phi2short(0.07);
 
-  constexpr int16_t phicuts[nPairs]{phi0p05,
-                                             phi0p07,
-                                             phi0p07,
-                                             phi0p05,
-                                             phi0p06,
-                                             phi0p06,
-                                             phi0p05,
-                                             phi0p05,
-                                             phi0p06,
-                                             phi0p06,
-                                             phi0p06,
-                                             phi0p05,
-                                             phi0p05,
-                                             phi0p05,
-                                             phi0p05,
-                                             phi0p05,
-                                             phi0p05,
-                                             phi0p05,
-                                             phi0p05};
+  constexpr int16_t phicuts[nPairs]{phi0p05, phi0p05, phi0p05, phi0p05};
+  /* constexpr int16_t phicuts[nPairs]{phi0p05, */
+									/* phi0p07, */
+									/* phi0p07, */
+									/* phi0p05, */
+									/* phi0p06, */
+									/* phi0p06, */
+									/* phi0p05, */
+									/* phi0p05, */
+									/* phi0p06, */
+									/* phi0p06, */
+									/* phi0p06, */
+									/* phi0p05, */
+									/* phi0p05, */
+									/* phi0p05, */
+									/* phi0p05, */
+									/* phi0p05, */
+									/* phi0p05, */
+									/* phi0p05, */
+									/* phi0p05}; */
   //   phi0p07, phi0p07, phi0p06,phi0p06, phi0p06,phi0p06};  // relaxed cuts
 
   /* constexpr float minz[nPairs] = { */
