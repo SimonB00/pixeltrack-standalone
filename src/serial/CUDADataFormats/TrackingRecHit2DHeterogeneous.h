@@ -151,7 +151,7 @@ TrackingRecHit2DHeterogeneous<Traits>::TrackingRecHit2DHeterogeneous(
   m_hitsLayerStart = view->m_hitsLayerStart = layerStart.data();
 
   cms::cuda::fillManyFromVector(
-      view->m_hist, 10, view->m_iphi, view->m_hitsLayerStart, nHits, 256);
+      view->m_hist, 10, view->m_iphi, view->m_hitsLayerStart, nHits);
   m_view.reset(view.release());
 }
 
