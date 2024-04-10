@@ -125,7 +125,7 @@ export ROCM_TEST_CXXFLAGS := -DGPU_DEBUG
 endif
 
 # SYCL and Intel oneAPI
-SYCL_USE_INTEL_ONEAPI := true
+SYCL_USE_INTEL_ONEAPI :=
 
 # Intel GPU ids
 OCLOC_IDS := tgllp acm_g10 pvc
