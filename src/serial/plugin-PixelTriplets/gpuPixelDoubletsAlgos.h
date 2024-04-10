@@ -31,9 +31,9 @@ namespace gpuPixelDoublets {
                          TrackingRecHit2DSOAView const& __restrict__ hh,
                          GPUCACell::OuterHitOfCell* isOuterHitOfCell,
                          int16_t const* __restrict__ phicuts,
-                         float const* __restrict__ minz,
-                         float const* __restrict__ maxz,
-                         float const* __restrict__ maxr,
+                         /* float const* __restrict__ minz, */
+                         /* float const* __restrict__ maxz, */
+                         /* float const* __restrict__ maxr, */
                          bool ideal_cond,
                          bool doClusterCut,
                          bool doZ0Cut,
@@ -53,10 +53,11 @@ namespace gpuPixelDoublets {
     using Hist = TrackingRecHit2DSOAView::Hist;
 
     auto const& __restrict__ hist = hh.phiBinner();
-    uint32_t const* __restrict__ offsets = hh.hitsLayerStart();
+    /* uint32_t const* __restrict__ offsets = hh.hitsLayerStart(); */
+    auto const* offsets = hh.hitsLayerStart();
     assert(offsets);
 
-    auto layerSize = [=](uint8_t li) { return offsets[li + 1] - offsets[li]; };
+    auto layerSize = [=](uint8_t li) { return offsets[li + 1] - offsets[li]; };		// numer of hits in layer
 
     // nPairsMax to be optimized later (originally was 64).
     // If it should be much bigger, consider using a block-wide parallel prefix scan,
@@ -102,9 +103,9 @@ namespace gpuPixelDoublets {
       assert(i < offsets[inner + 1]);
 
       // found hit corresponding to our cuda thread, now do the job
-      auto mi = hh.detectorIndex(i);
-      if (mi > 2000)
-        continue;  // invalid
+      /* auto mi = hh.detectorIndex(i); */
+      /* if (mi > 2000) */
+      /*   continue;  // invalid */
 
       /* maybe clever, not effective when zoCut is on
       auto bpos = (mi%8)/4;  // if barrel is 1 for z>0
@@ -114,34 +115,38 @@ namespace gpuPixelDoublets {
 
       auto mez = hh.zGlobal(i);
 
-      if (mez < minz[pairLayerId] || mez > maxz[pairLayerId])
-        continue;
+      /* if (mez < minz[pairLayerId] || mez > maxz[pairLayerId]) */
+      /*   continue; */
 
       int16_t mes = -1;  // make compiler happy
+	  auto doClusterCut = false;
       if (doClusterCut) {
         // if ideal treat inner ladder as outer
-        if (inner == 0)
-          assert(mi < 96);
-        isOuterLadder = ideal_cond ? true : 0 == (mi / 8) % 2;  // only for B1/B2/B3 B4 is opposite, FPIX:noclue...
+        /* if (inner == 0) */
+        /*   assert(mi < 96); */
+        /* isOuterLadder = ideal_cond ? true : 0 == (mi / 8) % 2;  // only for B1/B2/B3 B4 is opposite, FPIX:noclue... */
+		isOuterLadder = true;
 
         // in any case we always test mes>0 ...
-        mes = inner > 0 || isOuterLadder ? hh.clusterSizeY(i) : -1;
+        /* mes = inner > 0 || isOuterLadder ? hh.clusterSizeY(i) : -1; */
 
-        if (inner == 0 && outer > 3)  // B1 and F1
-          if (mes > 0 && mes < minYsizeB1)
-            continue;                 // only long cluster  (5*8)
-        if (inner == 1 && outer > 3)  // B2 and F1
-          if (mes > 0 && mes < minYsizeB2)
-            continue;
+        /* if (inner == 0 && outer > 3)  // B1 and F1 */
+        /*   if (mes > 0 && mes < minYsizeB1) */
+        /*     continue;                 // only long cluster  (5*8) */
+        /* if (inner == 1 && outer > 3)  // B2 and F1 */
+        /*   if (mes > 0 && mes < minYsizeB2) */
+        /*     continue; */
       }
       auto mep = hh.iphi(i);
       auto mer = hh.rGlobal(i);
 
       // all cuts: true if fails
       constexpr float z0cut = 12.f;      // cm
-      constexpr float hardPtCut = 0.5f;  // GeV
+      /* constexpr float hardPtCut = 0.5f;  // GeV */
+      constexpr float hardPtCut = 1.f;  // GeV
       constexpr float minRadius =
-          hardPtCut * 87.78f;  // cm (1 GeV track has 1 GeV/c / (e * 3.8T) ~ 87 cm radius in a 3.8T field)
+          /* hardPtCut * 87.78f;  // cm (1 GeV track has 1 GeV/c / (e * 3.8T) ~ 87 cm radius in a 3.8T field) */
+          hardPtCut * 2 * 87.78f;  // cm (1 GeV track has 1 GeV/c / (e * 3.8T) ~ 87 cm radius in a 3.8T field)
       constexpr float minRadius2T4 = 4.f * minRadius * minRadius;
       auto ptcut = [&](int j, int16_t idphi) {
         auto r2t4 = minRadius2T4;
@@ -150,16 +155,17 @@ namespace gpuPixelDoublets {
         auto dphi = short2phi(idphi);
         return dphi * dphi * (r2t4 - ri * ro) > (ro - ri) * (ro - ri);
       };
-      auto z0cutoff = [&](int j) {
-        auto zo = hh.zGlobal(j);
-        auto ro = hh.rGlobal(j);
-        auto dr = ro - mer;
-        return dr > maxr[pairLayerId] || dr < 0 || std::abs((mez * ro - mer * zo)) > z0cut * dr;
-      };
+      /* auto z0cutoff = [&](int j) { */
+      /*   auto zo = hh.zGlobal(j); */
+      /*   auto ro = hh.rGlobal(j); */
+      /*   auto dr = ro - mer; */
+      /*   return dr > maxr[pairLayerId] || dr < 0 || std::abs((mez * ro - mer * zo)) > z0cut * dr; */
+      /* }; */
 
       auto zsizeCut = [&](int j) {
         auto onlyBarrel = outer < 4;
-        auto so = hh.clusterSizeY(j);
+        /* auto so = hh.clusterSizeY(j); */
+        auto so = 30;
         auto dy = inner == 0 ? maxDYsize12 : maxDYsize;
         // in the barrel cut on difference in size
         // in the endcap on the prediction on the first layer (actually in the barrel only: happen to be safe for endcap as well)
@@ -198,20 +204,20 @@ namespace gpuPixelDoublets {
           auto oi = *(p);
           assert(oi >= offsets[outer]);
           assert(oi < offsets[outer + 1]);
-          auto mo = hh.detectorIndex(oi);
-          if (mo > 2000)
-            continue;  //    invalid
+          /* auto mo = hh.detectorIndex(oi); */
+          /* if (mo > 2000) */
+          /*   continue;  //    invalid */
 
-          if (doZ0Cut && z0cutoff(oi))
-            continue;
+          /* if (doZ0Cut && z0cutoff(oi)) */
+          /*   continue; */
 
           auto mop = hh.iphi(oi);
           uint16_t idphi = std::min(std::abs(int16_t(mop - mep)), std::abs(int16_t(mep - mop)));
-          if (idphi > iphicut)
-            continue;
+          /* if (idphi > iphicut) */
+          /*   continue; */
 
-          if (doClusterCut && zsizeCut(oi))
-            continue;
+          /* if (doClusterCut && zsizeCut(oi)) */
+          /*   continue; */
           if (doPtCut && ptcut(oi, idphi))
             continue;
 
