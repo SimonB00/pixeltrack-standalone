@@ -108,6 +108,7 @@ namespace pixelgpudetails {
       }
     }
 
+	hits.reset();	// reset the view
     TrackingRecHit2DCPU hits_d(nHits, hits.view(), layerStart_, nullptr);
     return hits_d;
   }
