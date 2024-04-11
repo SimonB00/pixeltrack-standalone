@@ -222,7 +222,7 @@ void kernel_connect(cms::cuda::AtomicPairCounter *apc1,
     auto vi = isOuterHitOfCell[innerHitId].data();
 
     constexpr uint32_t last_bpix1_detIndex = 96;
-    constexpr uint32_t last_barrel_detIndex = 1184;
+    constexpr uint32_t last_barrel_detIndex = 3;	// the track-ml detector has 4 barrel layers
     auto ri = thisCell.get_inner_r(hh);
     auto zi = thisCell.get_inner_z(hh);
 
@@ -251,7 +251,8 @@ void kernel_connect(cms::cuda::AtomicPairCounter *apc1,
       if (aligned &&
           thisCell.dcaCut(hh,
                           oc,
-                          oc.get_inner_detIndex(hh) < last_bpix1_detIndex ? dcaCutInnerTriplet : dcaCutOuterTriplet,
+                          /* oc.get_inner_detIndex(hh) < last_bpix1_detIndex ? dcaCutInnerTriplet : dcaCutOuterTriplet, */
+						  dcaCutInnerTriplet,
                           hardCurvCut)) {  // FIXME tune cuts
         oc.addOuterNeighbor(cellIndex, *cellNeighbors);
         thisCell.theUsed |= 1;
@@ -279,11 +280,12 @@ void kernel_find_ntuplets(GPUCACell::Hits const *__restrict__ hhp,
       continue;  // cut by earlyFishbone
 
     auto pid = thisCell.theLayerPairId;
-    auto doit = minHitsPerNtuplet > 3 ? pid < 3 : pid < 8 || pid > 12;
+    /* auto doit = minHitsPerNtuplet > 3 ? pid < 3 : pid < 8 || pid > 12; */
+    auto doit = true;
     if (doit) {
       GPUCACell::TmpTuple stack;
       stack.reset();
-      thisCell.find_ntuplets<6>(
+      thisCell.find_ntuplets<10>(
           hh, cells, *cellTracks, *foundNtuplets, *apc, quality, stack, minHitsPerNtuplet, pid < 3);
       assert(stack.empty());
       // printf("in %d found quadruplets: %d\n", cellIndex, apc->get());
@@ -311,7 +313,7 @@ void kernel_countMultiplicity(HitContainer const *__restrict__ foundNtuplets,
       continue;
     if (quality[it] == trackQuality::dup)
       continue;
-    assert(quality[it] == trackQuality::bad);
+    /* assert(quality[it] == trackQuality::bad); */
     if (nhits > 5)
       printf("wrong mult %d %d\n", it, nhits);
     assert(nhits < 8);
