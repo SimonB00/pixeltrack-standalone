@@ -4,7 +4,10 @@
 
 #include <array>
 #include <cassert>
+#include <fstream>
+#include <iostream>
 #include <functional>
+#include <string>
 #include <vector>
 
 #include "Framework/Event.h"
@@ -19,25 +22,27 @@ namespace {
   }
 
   cAHitNtupletGenerator::QualityCuts makeQualityCuts() {
-    auto coeff = std::vector<double>{0.68177776, 0.74609577, -0.08035491, 0.00315399};  // chi2Coeff
-    return cAHitNtupletGenerator::QualityCuts{// polynomial coefficients for the pT-dependent chi2 cut
-                                              {(float)coeff[0], (float)coeff[1], (float)coeff[2], (float)coeff[3]},
-                                              // max pT used to determine the chi2 cut
-                                              10.f,  // chi2MaxPt
-                                                     // chi2 scale factor: 30 for broken line fit, 45 for Riemann fit
-                                              30.f,  // chi2Scale
-                                                     // regional cuts for triplets
-                                              {
-                                                  0.3f,  //tripletMaxTip
-                                                  0.5f,  // tripletMinPt
-                                                  12.f   // tripletMaxZip
-                                              },
-                                              // regional cuts for quadruplets
-                                              {
-                                                  0.5f,  // quadrupletMaxTip
-                                                  0.3f,  // quadrupletMinPt
-                                                  12.f   // quadrupletMaxZip
-                                              }};
+    auto coeff =
+        std::vector<double>{0.68177776, 0.74609577, -0.08035491, 0.00315399};  // chi2Coeff
+    return cAHitNtupletGenerator::QualityCuts{
+        // polynomial coefficients for the pT-dependent chi2 cut
+        {(float)coeff[0], (float)coeff[1], (float)coeff[2], (float)coeff[3]},
+        // max pT used to determine the chi2 cut
+        10.f,  // chi2MaxPt
+               // chi2 scale factor: 30 for broken line fit, 45 for Riemann fit
+        30.f,  // chi2Scale
+               // regional cuts for triplets
+        {
+            0.3f,  //tripletMaxTip
+            0.5f,  // tripletMinPt
+            12.f   // tripletMaxZip
+        },
+        // regional cuts for quadruplets
+        {
+            0.5f,  // quadrupletMaxTip
+            0.3f,  // quadrupletMinPt
+            12.f   // quadrupletMaxZip
+        }};
   }
 }  // namespace
 
@@ -45,7 +50,7 @@ using namespace std;
 CAHitNtupletGeneratorOnGPU::CAHitNtupletGeneratorOnGPU(edm::ProductRegistry& reg)
     : m_params(false,             // onGPU
                3,                 // minHitsPerNtuplet,
-               458752,            // maxNumberOfDoublets
+               4587520,           // maxNumberOfDoublets
                false,             //useRiemannFit
                true,              // fit5as4,
                true,              //includeJumpingForwardDoublets
@@ -93,7 +98,8 @@ CAHitNtupletGeneratorOnGPU::~CAHitNtupletGeneratorOnGPU() {
   delete m_counters;
 }
 
-PixelTrackHeterogeneous CAHitNtupletGeneratorOnGPU::makeTuples(TrackingRecHit2DCPU const& hits_d, float bfield) const {
+PixelTrackHeterogeneous CAHitNtupletGeneratorOnGPU::makeTuples(
+    TrackingRecHit2DCPU const& hits_d, float bfield) const {
   PixelTrackHeterogeneous tracks(std::make_unique<pixelTrack::TrackSoA>());
 
   auto* soa = tracks.get();
@@ -105,22 +111,28 @@ PixelTrackHeterogeneous CAHitNtupletGeneratorOnGPU::makeTuples(TrackingRecHit2DC
 
   kernels.buildDoublets(hits_d, nullptr);
   kernels.launchKernels(hits_d, soa, nullptr);
-  kernels.fillHitDetIndices(hits_d.view(), soa, nullptr);  // in principle needed only if Hits not "available"
+  kernels.fillHitDetIndices(
+      hits_d.view(), soa, nullptr);  // in principle needed only if Hits not "available"
 
   if (0 == hits_d.nHits())
     return tracks;
 
-  // now fit
-  HelixFitOnGPU fitter(bfield, m_params.fit5as4_);
-  fitter.allocateOnGPU(&(soa->hitIndices), kernels.tupleMultiplicity(), soa);
+  // note: the fits have been disabled
 
-  if (m_params.useRiemannFit_) {
-    fitter.launchRiemannKernelsOnCPU(hits_d.view(), hits_d.nHits(), CAConstants::maxNumberOfQuadruplets());
-  } else {
-    fitter.launchBrokenLineKernelsOnCPU(hits_d.view(), hits_d.nHits(), CAConstants::maxNumberOfQuadruplets());
+  // print tracks and save to file
+  const std::string trackPath = "../../../data/tracks/test.dat";
+  std::ofstream trackFile;
+  trackFile.open(trackPath);
+  int ind = 0;
+  for (auto& hi : soa->hitIndices.off) {
+    for (auto& ho : soa->hitIndices) {
+      std::cout << ho + hi << ' ';
+      std::cout << "ho: " << ho << ' ';
+      std::cout << "hi: " << hi << '\n';
+      trackFile << hi + ho << '\n';
+    }
   }
 
-  kernels.classifyTuples(hits_d, soa, nullptr);
-
+  trackFile.close();
   return tracks;
 }
