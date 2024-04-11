@@ -31,6 +31,8 @@ void CAHitNtupletGeneratorKernelsCPU::buildDoublets(HitsOnCPU const &hh, cudaStr
 
   cellStorage_.reset((unsigned char *)malloc(CAConstants::maxNumOfActiveDoublets() * sizeof(GPUCACell::CellNeighbors) +
                                              CAConstants::maxNumOfActiveDoublets() * sizeof(GPUCACell::CellTracks)));
+  assert(cellStorage_.get());
+
   device_theCellNeighborsContainer_ = (GPUCACell::CellNeighbors *)cellStorage_.get();
   device_theCellTracksContainer_ =
       (GPUCACell::CellTracks *)(cellStorage_.get() +
@@ -50,11 +52,11 @@ void CAHitNtupletGeneratorKernelsCPU::buildDoublets(HitsOnCPU const &hh, cudaStr
 
   // FIXME avoid magic numbers
   auto nActualPairs = gpuPixelDoublets::nPairs;
-  if (!m_params.includeJumpingForwardDoublets_)
-    nActualPairs = 15;
-  if (m_params.minHitsPerNtuplet_ > 3) {
-    nActualPairs = 13;
-  }
+  /* if (!m_params.includeJumpingForwardDoublets_) */
+  /*   nActualPairs = 15; */
+  /* if (m_params.minHitsPerNtuplet_ > 3) { */
+  /*   nActualPairs = 13; */
+  /* } */
 
   assert(nActualPairs <= gpuPixelDoublets::nPairs);
   gpuPixelDoublets::getDoubletsFromHisto(device_theCells_.get(),
@@ -118,8 +120,8 @@ void CAHitNtupletGeneratorKernelsCPU::launchKernels(HitsOnCPU const &hh, TkSoA *
                        device_hitTuple_apc_,
                        quality_d,
                        m_params.minHitsPerNtuplet_);
-  if (m_params.doStats_)
-    kernel_mark_used(hh.view(), device_theCells_.get(), device_nCells_);
+  /* if (m_params.doStats_) */
+  /*   kernel_mark_used(hh.view(), device_theCells_.get(), device_nCells_); */
 
   cms::cuda::finalizeBulk(device_hitTuple_apc_, tuples_d);
 
@@ -135,19 +137,19 @@ void CAHitNtupletGeneratorKernelsCPU::launchKernels(HitsOnCPU const &hh, TkSoA *
         hh.view(), device_theCells_.get(), device_nCells_, device_isOuterHitOfCell_.get(), nhits, true);
   }
 
-  if (m_params.doStats_) {
-    kernel_checkOverflows(tuples_d,
-                          device_tupleMultiplicity_.get(),
-                          device_hitTuple_apc_,
-                          device_theCells_.get(),
-                          device_nCells_,
-                          device_theCellNeighbors_.get(),
-                          device_theCellTracks_.get(),
-                          device_isOuterHitOfCell_.get(),
-                          nhits,
-                          m_params.maxNumberOfDoublets_,
-                          counters_);
-  }
+  /* if (m_params.doStats_) { */
+  /*   kernel_checkOverflows(tuples_d, */
+  /*                         device_tupleMultiplicity_.get(), */
+  /*                         device_hitTuple_apc_, */
+  /*                         device_theCells_.get(), */
+  /*                         device_nCells_, */
+  /*                         device_theCellNeighbors_.get(), */
+  /*                         device_theCellTracks_.get(), */
+  /*                         device_isOuterHitOfCell_.get(), */
+  /*                         nhits, */
+  /*                         m_params.maxNumberOfDoublets_, */
+  /*                         counters_); */
+  /* } */
 }
 
 template <>
@@ -158,10 +160,10 @@ void CAHitNtupletGeneratorKernelsCPU::classifyTuples(HitsOnCPU const &hh, TkSoA 
   // classify tracks based on kinematics
   kernel_classifyTracks(tuples_d, tracks_d, m_params.cuts_, quality_d);
 
-  if (m_params.lateFishbone_) {
-    // apply fishbone cleaning to good tracks
-    kernel_fishboneCleaner(device_theCells_.get(), device_nCells_, quality_d);
-  }
+  /* if (m_params.lateFishbone_) { */
+  /*   // apply fishbone cleaning to good tracks */
+  /*   kernel_fishboneCleaner(device_theCells_.get(), device_nCells_, quality_d); */
+  /* } */
 
   // remove duplicates (tracks that share a doublet)
   kernel_fastDuplicateRemover(device_theCells_.get(), device_nCells_, tuples_d, tracks_d);
