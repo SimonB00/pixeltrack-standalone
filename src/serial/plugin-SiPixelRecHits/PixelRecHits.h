@@ -62,8 +62,6 @@ namespace pixelgpudetails {
         hits.r.push_back(std::sqrt(x * x + y * y));
 
 		int16_t phi{phi2short(std::atan(y / x))};
-		assert(phi >= -M_PI);
-		assert(phi <= M_PI);
 		hits.phi.push_back(phi);
 
         getline(fileStream, temp, ',');
