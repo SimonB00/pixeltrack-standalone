@@ -21,9 +21,21 @@ struct HitsCoordsSoA {
     float* r;
     int16_t* phi;
     uint16_t* global_indexes;
+
+	HitsCoordsSoAView() = default;
   };
 
   std::unique_ptr<HitsCoordsSoAView> m_view;
+
+  HitsCoordsSoA() : m_view(std::make_unique<HitsCoordsSoAView>()) {}
+
+  HitsCoordsSoA(const HitsCoordsSoA&) = delete;
+  HitsCoordsSoA& operator=(const HitsCoordsSoA&) = delete;
+
+  HitsCoordsSoA(HitsCoordsSoA&&) = default;
+  HitsCoordsSoA& operator=(HitsCoordsSoA&&) = default;
+
+  ~HitsCoordsSoA() = default;
 
   void reset() {
     m_view->x = x.data();
