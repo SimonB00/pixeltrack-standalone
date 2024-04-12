@@ -37,7 +37,7 @@ namespace pixelgpudetails {
       HitsCoordsSoA hits;
       uint32_t nHits{};
 
-      std::ifstream iFile("../../../data/track-ml/hits_1000.csv");
+      std::ifstream iFile("data/track-ml/hits_1000.csv");
       if (!iFile.is_open()) {
         std::cerr << "Error opening file" << std::endl;
       }
