@@ -9,7 +9,7 @@ def calculate_index(volumes: pd.Series, layers: pd.Series) -> list:
         id = 0
         if v == 7:
             id += 3
-            id += l / 2
+            id += 8 - l / 2
         elif v == 9:
             id += 10
             id += l / 2
@@ -23,5 +23,6 @@ def calculate_index(volumes: pd.Series, layers: pd.Series) -> list:
 data = pd.read_csv('event000001000-hits.csv')
 data = data[data['volume_id'] <= 9]
 data['global_index'] = calculate_index(data['volume_id'], data['layer_id'])
+print(data.to_markdown())
 data = data.drop(['hit_id', 'volume_id', 'layer_id', 'module_id'], axis=1)
 data.to_csv('hits_1000.csv', index=False)
