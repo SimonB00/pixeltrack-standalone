@@ -11,6 +11,7 @@
 #include <string>
 
 #include "DataFormats/BeamSpotPOD.h"
+#include "DataFormats/approx_atan2.h"
 #include "CUDADataFormats/SiPixelClustersSoA.h"
 #include "CUDADataFormats/SiPixelDigisSoA.h"
 #include "CUDADataFormats/TrackingRecHit2DHeterogeneous.h"
@@ -60,10 +61,13 @@ namespace pixelgpudetails {
 
         hits.r.push_back(std::sqrt(x * x + y * y));
 
+		int16_t phi{phi2short(std::atan(y / x))};
+		assert(phi >= -M_PI);
+		assert(phi <= M_PI);
+		hits.phi.push_back(phi);
+
         getline(fileStream, temp, ',');
         hits.global_indexes.push_back(std::stoi(temp));
-        getline(fileStream, temp);
-        hits.phi.push_back(std::stof(temp));
 
         ++nHits;
       }
