@@ -7,7 +7,7 @@
 #include "CAHitNtupletGeneratorOnGPU.h"
 #include "CUDADataFormats/PixelTrackHeterogeneous.h"
 #include "CUDADataFormats/TrackingRecHit2DHeterogeneous.h"
-#include "PixelRecHitsCustom.h"
+#include "plugin-SiPixelRecHits/PixelRecHits.h"
 
 class TrackMLProducer : public edm::EDProducer {
 public:
@@ -17,7 +17,7 @@ public:
 private:
   void produce(edm::Event& iEvent, const edm::EventSetup& iSetup) override;
 
-  pixelgpudetails::PixelRecHitGPUKernelCustom algo_;
+  pixelgpudetails::PixelRecHitGPUKernel algo_;
   CAHitNtupletGeneratorOnGPU gpuAlgo_;
   edm::EDPutTokenT<TrackingRecHit2DCPU> tokenHitCPU_;
 };
@@ -28,7 +28,7 @@ TrackMLProducer::TrackMLProducer(edm::ProductRegistry& reg)
       tokenHitCPU_(reg.produces<TrackingRecHit2DCPU>()) {}
 
 void TrackMLProducer::produce(edm::Event& iEvent, const edm::EventSetup& es) {
-  iEvent.emplace(tokenHitCPU_, algo_.makeHits2(test_file));
+  iEvent.emplace(tokenHitCPU_, algo_.makeHits());
 }
 
 DEFINE_FWK_MODULE(TrackMLProducer);
