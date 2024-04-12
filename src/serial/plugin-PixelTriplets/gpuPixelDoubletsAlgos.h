@@ -31,9 +31,6 @@ namespace gpuPixelDoublets {
                          TrackingRecHit2DSOAView const& __restrict__ hh,
                          GPUCACell::OuterHitOfCell* isOuterHitOfCell,
                          int16_t const* __restrict__ phicuts,
-                         /* float const* __restrict__ minz, */
-                         /* float const* __restrict__ maxz, */
-                         /* float const* __restrict__ maxr, */
                          bool ideal_cond,
                          bool doClusterCut,
                          bool doZ0Cut,

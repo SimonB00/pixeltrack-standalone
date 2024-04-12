@@ -83,9 +83,6 @@ namespace gpuPixelDoublets {
                       hh,
                       isOuterHitOfCell,
                       phicuts,
-                      /* minz, */
-                      /* maxz, */
-                      /* maxr, */
                       ideal_cond,
                       doClusterCut,
                       doZ0Cut,
