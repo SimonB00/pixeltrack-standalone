@@ -2,6 +2,7 @@
 #define CUDADataFormats_TrackingRecHit_interface_TrackingRecHit2DHeterogeneous_h
 
 #include <cstdint>
+#include <iostream>
 #include "CUDADataFormats/TrackingRecHit2DSOAView.h"
 #include "CUDADataFormats/HeterogeneousSoA.h"
 
@@ -23,7 +24,7 @@ public:
                                          uint32_t const* hitsModuleStart,
                                          cudaStream_t stream);
   explicit TrackingRecHit2DHeterogeneous(uint32_t nHits,
-                                         const HitsCoordsSoAView* hits,
+                                         HitsCoordsSoA&& hits,
                                          std::vector<uint32_t>& layerStart,
                                          cudaStream_t stream);
 
@@ -131,7 +132,7 @@ TrackingRecHit2DHeterogeneous<Traits>::TrackingRecHit2DHeterogeneous(
 template <typename Traits>
 TrackingRecHit2DHeterogeneous<Traits>::TrackingRecHit2DHeterogeneous(
     uint32_t nHits,
-    const HitsCoordsSoAView* hits,
+    HitsCoordsSoA&& hits,
     std::vector<uint32_t>& layerStart,
     cudaStream_t stream)
     : m_nHits{nHits} {
@@ -142,16 +143,19 @@ TrackingRecHit2DHeterogeneous<Traits>::TrackingRecHit2DHeterogeneous(
   m_HistStore = Traits::template make_device_unique<TrackingRecHit2DSOAView::Hist>(stream);
   m_hist = view->m_hist = m_HistStore.get();  // release?
 
-  view->m_xg = hits->x;
-  view->m_yg = hits->y;
-  view->m_zg = hits->z;
-  view->m_rg = hits->r;
-  view->m_detInd = hits->global_indexes;
-  m_iphi = view->m_iphi = hits->phi;
+  view->m_xg = std::move(hits.x.data());
+  view->m_yg = std::move(hits.y.data());
+  view->m_zg = std::move(hits.z.data());
+  view->m_rg = std::move(hits.r.data());
+  view->m_detInd = std::move(hits.global_indexes.data());
+  m_iphi = view->m_iphi = std::move(hits.phi.data());
+
+  for (auto x : layerStart) {
+    std::cout << x << std::endl;
+  }
   m_hitsLayerStart = view->m_hitsLayerStart = layerStart.data();
 
-  cms::cuda::fillManyFromVector(
-      view->m_hist, 10, view->m_iphi, view->m_hitsLayerStart, nHits);
+  cms::cuda::fillManyFromVector(view->m_hist, 10, view->m_iphi, view->m_hitsLayerStart, nHits);
   m_view.reset(view.release());
 }
 
