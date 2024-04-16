@@ -25,7 +25,7 @@ public:
                                          cudaStream_t stream);
   explicit TrackingRecHit2DHeterogeneous(uint32_t nHits,
                                          HitsCoordsSoA&& hits,
-                                         std::vector<uint32_t>& layerStart,
+                                         std::vector<uint32_t>&& layerStart,
                                          cudaStream_t stream);
 
   ~TrackingRecHit2DHeterogeneous() = default;
@@ -64,6 +64,7 @@ private:
 
   // needed as kernel params...
   Hist* m_hist;
+  std::vector<uint32_t> m_layerStart;
   uint32_t* m_hitsLayerStart;
   int16_t* m_iphi;
 };
@@ -133,7 +134,7 @@ template <typename Traits>
 TrackingRecHit2DHeterogeneous<Traits>::TrackingRecHit2DHeterogeneous(
     uint32_t nHits,
     HitsCoordsSoA&& hits,
-    std::vector<uint32_t>& layerStart,
+    std::vector<uint32_t>&& layerStart,
     cudaStream_t stream)
     : m_nHits{nHits} {
   auto view = Traits::template make_host_unique<TrackingRecHit2DSOAView>(stream);
@@ -150,10 +151,10 @@ TrackingRecHit2DHeterogeneous<Traits>::TrackingRecHit2DHeterogeneous(
   view->m_detInd = std::move(hits.global_indexes.data());
   m_iphi = view->m_iphi = std::move(hits.phi.data());
 
-  for (auto x : layerStart) {
-    std::cout << x << std::endl;
-  }
-  m_hitsLayerStart = view->m_hitsLayerStart = layerStart.data();
+  m_layerStart = std::move(layerStart);
+
+  m_hitsLayerStart = m_layerStart.data();
+  view->m_hitsLayerStart = m_layerStart.data();
 
   cms::cuda::fillManyFromVector(view->m_hist, 10, view->m_iphi, view->m_hitsLayerStart, nHits);
   m_view.reset(view.release());

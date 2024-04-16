@@ -78,14 +78,7 @@ namespace pixelgpudetails {
       }
 
       hits.reset();  // reset the view
-      TrackingRecHit2DCPU hits_d(nHits, std::move(hits), layerStart_, nullptr);
-      for (size_t i{0}; i < 18; ++i) {
-        std::cout << "ls: " << hits_d.hitsLayerStart()[i] << " from " << __FILE__ << std::endl;
-      }
-      for (size_t i{0}; i < 18; ++i) {
-        std::cout << "vls: " << hits_d.view()->hitsLayerStart()[i] << " from " << __FILE__
-                  << std::endl;
-      }
+      TrackingRecHit2DCPU hits_d(nHits, std::move(hits), std::move(layerStart_), nullptr);
       return hits_d;
     }
   };

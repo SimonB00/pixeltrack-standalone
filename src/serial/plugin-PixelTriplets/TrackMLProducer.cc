@@ -26,14 +26,6 @@ TrackMLProducer::TrackMLProducer(edm::ProductRegistry& reg)
     : algo_(), gpuAlgo_(reg), tokenHitCPU_(reg.produces<TrackingRecHit2DCPU>()) {}
 
 void TrackMLProducer::produce(edm::Event& iEvent, const edm::EventSetup& es) {
-  auto hits = algo_.makeHits();
-  for (size_t i{}; i < 18; ++i) {
-    std::cout << "ls: " << hits.hitsLayerStart()[i] << " from " << __FILE__ << std::endl;
-  }
-  for (size_t i{}; i < 18; ++i) {
-    std::cout << "vls: " << hits.view()->hitsLayerStart()[i] << " from " << __FILE__
-              << std::endl;
-  }
   iEvent.emplace(tokenHitCPU_, algo_.makeHits());
 }
 
