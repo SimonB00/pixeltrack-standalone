@@ -56,6 +56,8 @@ private:
   unique_ptr<TrackingRecHit2DSOAView::Hist> m_HistStore;                        //!
   unique_ptr<TrackingRecHit2DSOAView::AverageGeometry> m_AverageGeometryStore;  //!
 
+  HitsCoordsSoA m_hits;
+
   unique_ptr<TrackingRecHit2DSOAView> m_view;  //!
 
   uint32_t m_nHits;
@@ -144,12 +146,19 @@ TrackingRecHit2DHeterogeneous<Traits>::TrackingRecHit2DHeterogeneous(
   m_HistStore = Traits::template make_device_unique<TrackingRecHit2DSOAView::Hist>(stream);
   m_hist = view->m_hist = m_HistStore.get();  // release?
 
-  view->m_xg = std::move(hits.x.data());
-  view->m_yg = std::move(hits.y.data());
-  view->m_zg = std::move(hits.z.data());
-  view->m_rg = std::move(hits.r.data());
-  view->m_detInd = std::move(hits.global_indexes.data());
-  m_iphi = view->m_iphi = std::move(hits.phi.data());
+  m_hits.x = std::move(hits.x);
+  m_hits.y = std::move(hits.y);
+  m_hits.z = std::move(hits.z);
+  m_hits.r = std::move(hits.r);
+  m_hits.global_indexes = std::move(hits.global_indexes);
+  m_hits.phi = std::move(hits.phi);
+
+  view->m_xg = m_hits.x.data();
+  view->m_yg = m_hits.y.data();
+  view->m_zg = m_hits.z.data();
+  view->m_rg = m_hits.r.data();
+  view->m_detInd = m_hits.global_indexes.data();
+  m_iphi = view->m_iphi = m_hits.phi.data();
 
   m_layerStart = std::move(layerStart);
 
