@@ -48,6 +48,7 @@ int main(int argc, char** argv) {
   bool validation = false;
   bool histogram = false;
   bool empty = false;
+  bool paramsFromFile = false;
   for (auto i = args.begin() + 1, e = args.end(); i != e; ++i) {
     if (*i == "-h" or *i == "--help") {
       print_help(args.front());
@@ -76,6 +77,8 @@ int main(int argc, char** argv) {
       histogram = true;
     } else if (*i == "--empty") {
       empty = true;
+    } else if (*i == "--paramsFromFile") {
+      paramsFromFile = true;
     } else {
       std::cout << "Invalid parameter " << *i << std::endl << std::endl;
       print_help(args.front());
@@ -112,6 +115,11 @@ int main(int argc, char** argv) {
     /*              "PixelCPEFastESProducer"}; */
 	edmodules = {"TrackMLProducer", "CAHitNtupletCUDA"};
 	esmodules = {};
+    if (paramsFromFile){
+      edmodules.emplace_back("CAHitNtupletCUDAfromFile");
+    } else {
+      edmodules.emplace_back("CAHitNtupletCUDA");
+    }
     if (validation) {
       edmodules.emplace_back("CountValidator");
     }
