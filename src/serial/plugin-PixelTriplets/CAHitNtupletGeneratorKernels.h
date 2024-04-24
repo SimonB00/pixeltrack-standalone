@@ -160,9 +160,13 @@ public:
   using HitContainer = pixelTrack::HitContainer;
 
   CAHitNtupletGeneratorKernels(Params const& params) : m_params(params) {}
-  ~CAHitNtupletGeneratorKernels() = default;
+  ~CAHitNtupletGeneratorKernels() {
+    cellStorage_.reset((unsigned char*)malloc(sizeof(unsigned char)));
+  }
 
-  TupleMultiplicity const* tupleMultiplicity() const { return device_tupleMultiplicity_.get(); }
+  TupleMultiplicity const* tupleMultiplicity() const {
+    return device_tupleMultiplicity_.get();
+  }
 
   void launchKernels(HitsOnCPU const& hh, TkSoA* tuples_d, cudaStream_t cudaStream);
 
@@ -201,6 +205,7 @@ private:
   Params const& m_params;
 };
 
-using CAHitNtupletGeneratorKernelsCPU = CAHitNtupletGeneratorKernels<cms::cudacompat::CPUTraits>;
+using CAHitNtupletGeneratorKernelsCPU =
+    CAHitNtupletGeneratorKernels<cms::cudacompat::CPUTraits>;
 
 #endif  // RecoPixelVertexing_PixelTriplets_plugins_CAHitNtupletGeneratorKernels_h

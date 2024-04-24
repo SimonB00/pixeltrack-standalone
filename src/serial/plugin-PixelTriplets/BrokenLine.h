@@ -340,6 +340,10 @@ namespace BrokenLine {
         -circle_results.q * (fast_fit(2) - sqrt(Rfit::sqr(fast_fit(2)) - 0.25 * (e - d).squaredNorm())),
         circle_results.q * (1. / fast_fit(2) + u(n));
 
+    if(std::isnan(circle_results.par(1))){
+      circle_results.par(1) = circle_results.q < 0 ? 1. : -1.;
+    }
+
     assert(circle_results.q * circle_results.par(1) <= 0);
 
     Rfit::Vector2d eMinusd = e - d;

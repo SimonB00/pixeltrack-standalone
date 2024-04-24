@@ -42,14 +42,18 @@ void kernelBLFastFit(Tuples const *__restrict__ foundNtuplets,
   // look in bin for this hit multiplicity
   auto local_start = 0;
 
-#ifdef BROKENLINE_DEBUG
+  /* #ifdef BROKENLINE_DEBUG */
   if (0 == local_start) {
     printf("%d total Ntuple\n", foundNtuplets->nbins());
-    printf("%d Ntuple of size %d for %d hits to fit\n", tupleMultiplicity->size(nHits), nHits, hitsInFit);
+    printf("%d Ntuple of size %d for %d hits to fit\n",
+           tupleMultiplicity->size(nHits),
+           nHits,
+           hitsInFit);
   }
-#endif
+  /* #endif */
 
-  for (int local_idx = local_start, nt = Rfit::maxNumberOfConcurrentFits(); local_idx < nt; local_idx++) {
+  for (int local_idx = local_start, nt = Rfit::maxNumberOfConcurrentFits(); local_idx < nt;
+       local_idx++) {
     auto tuple_idx = local_idx + offset;
     if (tuple_idx >= tupleMultiplicity->size(nHits))
       break;
@@ -64,41 +68,45 @@ void kernelBLFastFit(Tuples const *__restrict__ foundNtuplets,
     Rfit::Map4d fast_fit(pfast_fit + local_idx);
     Rfit::Map6xNf<N> hits_ge(phits_ge + local_idx);
 
-#ifdef BL_DUMP_HITS
+    /* #ifdef BL_DUMP_HITS */
     int done;
     done = 0;
 
     bool dump = (foundNtuplets->size(tkid) == 5 && 0 == atomicAdd(&done, 1));
-#endif
+    /* #endif */
 
     // Prepare data structure
     auto const *hitId = foundNtuplets->begin(tkid);
     for (unsigned int i = 0; i < hitsInFit; ++i) {
       auto hit = hitId[i];
       float ge[6];
-      hhp->cpeParams()
-          .detParams(hhp->detectorIndex(hit))
-          .frame.toGlobal(hhp->xerrLocal(hit), 0, hhp->yerrLocal(hit), ge);
+      ge[0] = 1e-7;
+      ge[1] = 1e-7;
+      ge[2] = 1e-7;
+      ge[3] = 1e-7;
+      ge[4] = 1e-7;
+      ge[5] = 1e-7;
+      /* hhp->cpeParams() */
+      /*     .detParams(hhp->detectorIndex(hit)) */
+      /*     .frame.toGlobal(hhp->xerrLocal(hit), 0, hhp->yerrLocal(hit), ge); */
 #ifdef BL_DUMP_HITS
-      if (dump) {
-        printf("Hit global: %d: %d hits.col(%d) << %f,%f,%f\n",
-               tkid,
-               hhp->detectorIndex(hit),
-               i,
-               hhp->xGlobal(hit),
-               hhp->yGlobal(hit),
-               hhp->zGlobal(hit));
-        printf("Error: %d: %d  hits_ge.col(%d) << %e,%e,%e,%e,%e,%e\n",
-               tkid,
-               hhp->detetectorIndex(hit),
-               i,
-               ge[0],
-               ge[1],
-               ge[2],
-               ge[3],
-               ge[4],
-               ge[5]);
-      }
+      printf("Hit global: %d: %d hits.col(%d) << %f,%f,%f\n",
+             tkid,
+             hhp->detectorIndex(hit),
+             i,
+             hhp->xGlobal(hit),
+             hhp->yGlobal(hit),
+             hhp->zGlobal(hit));
+      printf("Error: %d: %d  hits_ge.col(%d) << %e,%e,%e,%e,%e,%e\n",
+             tkid,
+             hhp->detetectorIndex(hit),
+             i,
+             ge[0],
+             ge[1],
+             ge[2],
+             ge[3],
+             ge[4],
+             ge[5]);
 #endif
       hits.col(i) << hhp->xGlobal(hit), hhp->yGlobal(hit), hhp->zGlobal(hit);
       hits_ge.col(i) << ge[0], ge[1], ge[2], ge[3], ge[4], ge[5];
@@ -131,7 +139,8 @@ void kernelBLFit(CAConstants::TupleMultiplicity const *__restrict__ tupleMultipl
 
   // look in bin for this hit multiplicity
   auto local_start = 0;
-  for (int local_idx = local_start, nt = Rfit::maxNumberOfConcurrentFits(); local_idx < nt; local_idx++) {
+  for (int local_idx = local_start, nt = Rfit::maxNumberOfConcurrentFits(); local_idx < nt;
+       local_idx++) {
     auto tuple_idx = local_idx + offset;
     if (tuple_idx >= tupleMultiplicity->size(nHits))
       break;
@@ -153,7 +162,8 @@ void kernelBLFit(CAConstants::TupleMultiplicity const *__restrict__ tupleMultipl
     BrokenLine::BL_Line_fit(hits_ge, fast_fit, B, data, line);
     BrokenLine::BL_Circle_fit(hits, hits_ge, fast_fit, B, data, circle);
 
-    results->stateAtBS.copyFromCircle(circle.par, circle.cov, line.par, line.cov, 1.f / float(B), tkid);
+    results->stateAtBS.copyFromCircle(
+        circle.par, circle.cov, line.par, line.cov, 1.f / float(B), tkid);
     results->pt(tkid) = float(B) / float(std::abs(circle.par(2)));
     results->eta(tkid) = asinhf(line.par(0));
     results->chi2(tkid) = (circle.chi2 + line.chi2) / (2 * N - 5);

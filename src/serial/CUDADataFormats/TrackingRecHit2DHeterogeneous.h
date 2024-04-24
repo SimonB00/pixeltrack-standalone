@@ -1,8 +1,12 @@
 #ifndef CUDADataFormats_TrackingRecHit_interface_TrackingRecHit2DHeterogeneous_h
 #define CUDADataFormats_TrackingRecHit_interface_TrackingRecHit2DHeterogeneous_h
 
+#include <cstdint>
+#include <iostream>
 #include "CUDADataFormats/TrackingRecHit2DSOAView.h"
 #include "CUDADataFormats/HeterogeneousSoA.h"
+
+#include "DataFormats/HitsCoordsSoA.h"
 
 template <typename Traits>
 class TrackingRecHit2DHeterogeneous {
@@ -11,12 +15,17 @@ public:
   using unique_ptr = typename Traits::template unique_ptr<T>;
 
   using Hist = TrackingRecHit2DSOAView::Hist;
+  using HitsCoordsSoAView = HitsCoordsSoA::HitsCoordsSoAView;
 
   TrackingRecHit2DHeterogeneous() = default;
 
   explicit TrackingRecHit2DHeterogeneous(uint32_t nHits,
                                          pixelCPEforGPU::ParamsOnGPU const* cpeParams,
                                          uint32_t const* hitsModuleStart,
+                                         cudaStream_t stream);
+  explicit TrackingRecHit2DHeterogeneous(uint32_t nHits,
+                                         HitsCoordsSoA&& hits,
+                                         std::vector<uint32_t>&& layerStart,
                                          cudaStream_t stream);
 
   ~TrackingRecHit2DHeterogeneous() = default;
@@ -37,7 +46,7 @@ public:
   auto iphi() { return m_iphi; }
 
 private:
-  static constexpr uint32_t n16 = 4;
+  static constexpr uint32_t n16 = 0;
   static constexpr uint32_t n32 = 9;
   static_assert(sizeof(uint32_t) == sizeof(float));  // just stating the obvious
 
@@ -47,6 +56,8 @@ private:
   unique_ptr<TrackingRecHit2DSOAView::Hist> m_HistStore;                        //!
   unique_ptr<TrackingRecHit2DSOAView::AverageGeometry> m_AverageGeometryStore;  //!
 
+  HitsCoordsSoA m_hits;
+
   unique_ptr<TrackingRecHit2DSOAView> m_view;  //!
 
   uint32_t m_nHits;
@@ -55,21 +66,24 @@ private:
 
   // needed as kernel params...
   Hist* m_hist;
+  std::vector<uint32_t> m_layerStart;
   uint32_t* m_hitsLayerStart;
   int16_t* m_iphi;
 };
 
 template <typename Traits>
-TrackingRecHit2DHeterogeneous<Traits>::TrackingRecHit2DHeterogeneous(uint32_t nHits,
-                                                                     pixelCPEforGPU::ParamsOnGPU const* cpeParams,
-                                                                     uint32_t const* hitsModuleStart,
-                                                                     cudaStream_t stream)
+TrackingRecHit2DHeterogeneous<Traits>::TrackingRecHit2DHeterogeneous(
+    uint32_t nHits,
+    pixelCPEforGPU::ParamsOnGPU const* cpeParams,
+    uint32_t const* hitsModuleStart,
+    cudaStream_t stream)
     : m_nHits(nHits), m_hitsModuleStart(hitsModuleStart) {
   auto view = Traits::template make_host_unique<TrackingRecHit2DSOAView>(stream);
 
   view->m_nHits = nHits;
   m_view = Traits::template make_device_unique<TrackingRecHit2DSOAView>(stream);
-  m_AverageGeometryStore = Traits::template make_device_unique<TrackingRecHit2DSOAView::AverageGeometry>(stream);
+  m_AverageGeometryStore =
+      Traits::template make_device_unique<TrackingRecHit2DSOAView::AverageGeometry>(stream);
   view->m_averageGeometry = m_AverageGeometryStore.get();
   view->m_cpeParams = cpeParams;
   view->m_hitsModuleStart = hitsModuleStart;
@@ -116,6 +130,43 @@ TrackingRecHit2DHeterogeneous<Traits>::TrackingRecHit2DHeterogeneous(uint32_t nH
 
   // transfer view
   m_view.reset(view.release());  // NOLINT: std::move() breaks CUDA version
+}
+
+template <typename Traits>
+TrackingRecHit2DHeterogeneous<Traits>::TrackingRecHit2DHeterogeneous(
+    uint32_t nHits,
+    HitsCoordsSoA&& hits,
+    std::vector<uint32_t>&& layerStart,
+    cudaStream_t stream)
+    : m_nHits{nHits} {
+  auto view = Traits::template make_host_unique<TrackingRecHit2DSOAView>(stream);
+
+  m_view = Traits::template make_device_unique<TrackingRecHit2DSOAView>(stream);
+  view->m_nHits = nHits;
+  m_HistStore = Traits::template make_device_unique<TrackingRecHit2DSOAView::Hist>(stream);
+  m_hist = view->m_hist = m_HistStore.get();  // release?
+
+  m_hits.x = std::move(hits.x);
+  m_hits.y = std::move(hits.y);
+  m_hits.z = std::move(hits.z);
+  m_hits.r = std::move(hits.r);
+  m_hits.global_indexes = std::move(hits.global_indexes);
+  m_hits.phi = std::move(hits.phi);
+
+  view->m_xg = m_hits.x.data();
+  view->m_yg = m_hits.y.data();
+  view->m_zg = m_hits.z.data();
+  view->m_rg = m_hits.r.data();
+  view->m_detInd = m_hits.global_indexes.data();
+  m_iphi = view->m_iphi = m_hits.phi.data();
+
+  m_layerStart = std::move(layerStart);
+
+  m_hitsLayerStart = m_layerStart.data();
+  view->m_hitsLayerStart = m_layerStart.data();
+
+  cms::cuda::fillManyFromVector(view->m_hist, 10, view->m_iphi, view->m_hitsLayerStart, nHits);
+  m_view.reset(view.release());
 }
 
 using TrackingRecHit2DCPU = TrackingRecHit2DHeterogeneous<cms::cudacompat::CPUTraits>;
