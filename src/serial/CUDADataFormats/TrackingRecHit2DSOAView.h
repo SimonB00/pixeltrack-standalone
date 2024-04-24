@@ -67,11 +67,9 @@ public:
   inline uint32_t hitsModuleStart(int i) const { return m_hitsModuleStart[i]; }
 
   inline uint32_t* hitsLayerStart() {
-    std::cout << "non const" << std::endl;
     return m_hitsLayerStart;
   }
   inline uint32_t const* hitsLayerStart() const {
-    std::cout << "const" << std::endl;
     return m_hitsLayerStart;
   }
 
