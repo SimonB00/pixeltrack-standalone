@@ -113,7 +113,7 @@ int main(int argc, char** argv) {
     /*              "SiPixelFedCablingMapGPUWrapperESProducer", */
     /*              "SiPixelGainCalibrationForHLTGPUESProducer", */
     /*              "PixelCPEFastESProducer"}; */
-	edmodules = {"TrackMLProducer", "CAHitNtupletCUDA"};
+	edmodules = {"TrackMLProducer"};
 	esmodules = {};
     if (paramsFromFile){
       edmodules.emplace_back("CAHitNtupletCUDAfromFile");
