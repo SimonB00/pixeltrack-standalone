@@ -32,6 +32,8 @@ public:
 public:
   CAHitNtupletGeneratorOnGPU(edm::ProductRegistry& reg);
 
+  CAHitNtupletGeneratorOnGPU(edm::ProductRegistry& reg, const std::string& filename);
+
   ~CAHitNtupletGeneratorOnGPU();
 
   PixelTrackHeterogeneous makeTuples(TrackingRecHit2DCPU const& hits_d, float bfield) const;

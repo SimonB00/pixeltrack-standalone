@@ -3,6 +3,10 @@
 
 #include "CUDADataFormats/PixelTrackHeterogeneous.h"
 #include "GPUCACell.h"
+#include <fstream>
+#include <iostream>
+#include <string>
+#include <vector>
 
 
 namespace cAHitNtupletGenerator {
@@ -48,6 +52,16 @@ namespace cAHitNtupletGenerator {
     region quadruplet;
   };
 
+  inline int16_t stos (std::string str){
+    int value = std::stoi(str);
+
+    if (value < std::numeric_limits<short>::min() || value > std::numeric_limits<short>::max()) {
+      throw std::range_error("String value out of range for short");
+    }
+
+    return static_cast<short>(value);
+  }
+
   // params
   struct Params {
     Params(bool onGPU,
@@ -69,7 +83,8 @@ namespace cAHitNtupletGenerator {
            float hardCurvCut,
            float dcaCutInnerTriplet,
            float dcaCutOuterTriplet,
-           QualityCuts const& cuts)
+           QualityCuts const& cuts,
+           int16_t* phiCuts)
         : onGPU_(onGPU),
           minHitsPerNtuplet_(minHitsPerNtuplet),
           maxNumberOfDoublets_(maxNumberOfDoublets),
@@ -89,7 +104,8 @@ namespace cAHitNtupletGenerator {
           hardCurvCut_(hardCurvCut),
           dcaCutInnerTriplet_(dcaCutInnerTriplet),
           dcaCutOuterTriplet_(dcaCutOuterTriplet),
-          cuts_(cuts) {}
+          cuts_(cuts),
+          phiCuts_(phiCuts) {}
 
     const bool onGPU_;
     const uint32_t minHitsPerNtuplet_;
@@ -102,15 +118,14 @@ namespace cAHitNtupletGenerator {
     const bool idealConditions_;
     const bool doStats_;
     const bool doClusterCut_;
-    const bool doZ0Cut_;
+    bool doZ0Cut_;
     const bool doPtCut_;
     const float ptmin_;
-    const float CAThetaCutBarrel_;
-    const float CAThetaCutForward_;
-    const float hardCurvCut_;
-    const float dcaCutInnerTriplet_;
-    const float dcaCutOuterTriplet_;
-
+    float CAThetaCutBarrel_;
+    float CAThetaCutForward_;
+    float hardCurvCut_;
+    float dcaCutInnerTriplet_;
+    float dcaCutOuterTriplet_;
     // quality cuts
     QualityCuts cuts_{// polynomial coefficients for the pT-dependent chi2 cut
                       {0.68177776, 0.74609577, -0.08035491, 0.00315399},
@@ -130,7 +145,7 @@ namespace cAHitNtupletGenerator {
                           0.3,  // pT > 0.3 GeV
                           12.0  // |Zip| < 12.0 cm
                       }};
-
+    int16_t* phiCuts_;
   };  // Params
 
 }  // namespace cAHitNtupletGenerator
@@ -200,6 +215,7 @@ private:
   unique_ptr<TupleMultiplicity> device_tupleMultiplicity_;
 
   unique_ptr<cms::cuda::AtomicPairCounter::c_type[]> device_storage_;
+
   // params
   Params const& m_params;
 };
